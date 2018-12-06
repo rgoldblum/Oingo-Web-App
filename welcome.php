@@ -1,7 +1,8 @@
 <?php
 
-//Get session variables
-session_start();
+//check if user is logged in
+require_once "check_login.php";
+
 $uid = $_SESSION["uid"];
 $username = $_SESSION["username"];
 
@@ -22,6 +23,7 @@ echo "<h1> Welcome to Oingo ".$username."!";
 <body>
     <div class="wrapper">
           <a href="mainpage.php" class="btn btn-primary">Map Page</a>
+          <a href="logout.php" class="btn btn-primary">Log Out</a>
     </div>
 </body>
 </html>

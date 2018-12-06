@@ -1,9 +1,10 @@
 <?php
+//check if user is logged in
+require_once "check_login.php";
+
 // Include config file
 require_once "config.php";
 
-//Get session variables
-session_start();
 $uid = $_SESSION["uid"];
 $username = $_SESSION["username"];
 
@@ -86,11 +87,22 @@ if($stmt = $conn->prepare($sql)){
     <title>Oingo Map</title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
-    <style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css">
+    <style type="text/css">
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
+       #logout-button {
+         align: right;
+       }
+      .map-container {
+        width: 600px;
+        height: 450px;
+      }
+
       #map {
+        width: 100%;
         height: 100%;
+        border: 1px solid blue;
         /* margin-left: 25%;
         margin-top: 25%; */
       }
@@ -110,17 +122,23 @@ if($stmt = $conn->prepare($sql)){
       }
 
       /* Optional: Makes the sample page fill the window. */
-      html, body {
+      /* html, body {
         height: 100%;
         margin: 0;
         padding: 0;
-      }
+      } */
 
     </style>
   </head>
   <body>
-    <div id="map"></div>
-    <div id="legend"><h3>Legend</h3></div>
+    <a id="logout-button" href="logout.php" class="btn btn-primary">Log Out</a>
+    <center>
+      <div class = "map-container">
+        <center><h1>MAP</h1></center>
+        <div id="map"></div>
+        <div id="legend"><h3>Legend</h3></div>
+      </div>
+  </center>
     <script>
       var map;
       var userLat;
