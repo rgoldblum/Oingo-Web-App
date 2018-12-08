@@ -5,78 +5,91 @@ require_once "check_login.php";
 // Include config file
 require_once "config.php";
 
-$uid = $_SESSION["uid"];
-$username = $_SESSION["username"];
+//Inlude fetch user data
+require_once "fetch_user_data.php";
 
-//array to store notes
-$notes = array();
+$userlat_err = $userlng_err = "";
 
-//get viewable notes from database
-// Prepare a select statement
-$sql = "SELECT * FROM note ";
+// Processing form data when form is submitted
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+  // Check if latitude is empty
+  if(empty(trim($_POST["userlat"]))){
+      $userlat_err = "Please enter latitude.";
+  } else{
+      $userlat = trim($_POST["userlat"]);
+  }
 
-if($stmt = $conn->prepare($sql)){
+  // Check if longitude is empty
+  if(empty(trim($_POST["userlng"]))){
+      $userlng_err = "Please enter longitude.";
+  } else{
+      $userlng = trim($_POST["userlng"]);
+  }
 
-    // Attempt to execute the prepared statement
-    if($stmt->execute()){
-      //store results
-      $result = $stmt->get_result();
+  // Validate credentials
+  if(empty($userlat_err) && empty($userlng_err)){
+      // Prepare a select statement
+      $sql = "UPDATE users SET latitude = ?, longitude = ? WHERE uid = ?";
 
-      //iterate through rows
-      while ($row = $result->fetch_assoc()) {
-        // echo '<p>Row:'.$row.'</p>';
-        //store row in notes array
-        $notes[] = $row;
+      if($stmt = $conn->prepare($sql)){
+          // Bind variables to the prepared statement as parameters
+          $stmt->bind_param("ddi", $param_userlat, $param_userlng, $param_uid);
+
+          echo $uid;
+
+          // Set parameters
+          $param_userlat = $userlat;
+          $param_userlng = $userlng;
+          $param_uid = $uid;
+
+          // Attempt to execute the prepared statement
+          if($stmt->execute()){
+            echo "We did it!";
+              // Store result
+              //$stmt->store_result();
+
+              // Check if username exists, if yes then verify password
+              // if($stmt->num_rows == 1){
+              //     // Bind result variables
+              //     $stmt->bind_result($uid, $username, $hashed_password);
+              //     if($stmt->fetch()){
+              //         if(password_verify($password, $hashed_password)){
+              //             // Password is correct, so start a new session
+              //             session_start();
+              //
+              //             // Store data in session variables
+              //             $_SESSION["loggedin"] = true;
+              //             $_SESSION["uid"] = $uid;
+              //             $_SESSION["username"] = $username;
+              //
+              //             // Redirect user to welcome page
+              //             header("location: mainpage.php");
+              //         } else{
+              //             // Display an error message if password is not valid
+              //             $password_err = "The password you entered was not valid.";
+              //         }
+              //     }
+              } else{
+                  // Display an error message if username doesn't exist
+                  $userlng_err = "Incorrect coordinates input.";
+              }
+
+              // Close statement
+              $stmt->close();
+
+          } else{
+              echo "Oops! Something went wrong. Please try again later.";
+          }
+      } else{
+          echo "statement wasnt prepared";
+          echo mysqli_error($conn);
       }
 
-      // $notes = json_encode($notes);
-      //
-      // echo $notes;
 
-    } else{
-        echo "Oops! Something went wrong. Please try again later.";
-    }
-}
+  }
 
-// // Start XML file, create parent node
-// $doc = domxml_new_doc("1.0");
-// $node = $doc->create_element("markers");
-// $parnode = $doc->append_child($node);
-
-
-// //get viewable notes from database
-// // Prepare a select statement
-// $sql = "SELECT nid, latitude, longitude FROM notes ";
-//
-// if($stmt = $conn->prepare($sql)){
-//     // Bind variables to the prepared statement as parameters
-//   //  $stmt->bind_param("s", $param_username);
-//
-//     // Set parameters
-//     //$param_username = trim($_POST["username"]);
-//
-//     // Attempt to execute the prepared statement
-//     if($stmt->execute()){
-//       //store results
-//       $result = $stmt->get_result();
-//
-//       //iterate through rows
-//       while ($row = $result->fetch_assoc()) {
-//         // Add to XML document node
-//         $node = $doc->create_element("marker");
-//         $newnode = $parnode->append_child($node);
-//         $newnode->set_attribute("id", $row['nid']);
-//         $newnode->set_attribute("lat", $row['latitude']);
-//         $newnode->set_attribute("long", $row['longitude']);
-//         // $newnode->set_attribute("type", $row['type']);
-//       }
-//
-//       $xmlfile = $doc->dump_mem();
-//
-//     } else{
-//         echo "Oops! Something went wrong. Please try again later.";
-//     }
-// }
+  // Close connection
+  $conn->close();
 
 ?>
 
@@ -91,9 +104,10 @@ if($stmt = $conn->prepare($sql)){
     <style type="text/css">
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
-       #logout-button {
-         align: right;
-       }
+       /* .location-container{
+         align: left;
+       } */
+
       .map-container {
         width: 600px;
         height: 450px;
@@ -131,18 +145,78 @@ if($stmt = $conn->prepare($sql)){
     </style>
   </head>
   <body>
-    <a id="logout-button" href="logout.php" class="btn btn-primary">Log Out</a>
-    <center>
-      <div class = "map-container">
-        <center><h1>MAP</h1></center>
-        <div id="map"></div>
-        <div id="legend"><h3>Legend</h3></div>
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="mainpage.php">Oingo</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="mainpage.php">Home</a></li>
+          <li><a href="user_notes.php">My Notes</a></li>
+          <li><a href="user_filters.php">My Filters</a></li>
+          <li><a href="user_states.php">My States</a></li>
+          <li><a href="user_friends.php">My Friends</a></li>
+          <!-- <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">Page 1-1</a></li>
+              <li><a href="#">Page 1-2</a></li>
+              <li><a href="#">Page 1-3</a></li>
+            </ul>
+          </li> -->
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        </ul>
       </div>
-  </center>
+    </nav>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="location-container">
+          <center><h1> Current Location</h1></center>
+          <?php echo 'Latitude: '.$userlat.', Longitude: '.$userlng;?>
+          <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+              <div class="form-group <?php echo (!empty($userlat_err)) ? 'has-error' : ''; ?>">
+                  <label>Latitude</label>
+                  <input type="number" step = "any" name="userlat" class="form-control" value="<?php echo $userlat; ?>">
+                  <span class="help-block"><?php echo $userlat_err; ?></span>
+              </div>
+              <div class="form-group <?php echo (!empty($userlng_err)) ? 'has-error' : ''; ?>">
+                  <label>Longitude</label>
+                  <input type="number" step = "any" name="userlng" class="form-control" value="<?php echo $userlng; ?>">
+                  <span class="help-block"><?php echo $userlng_err; ?></span>
+              </div>
+              <div class="form-group">
+                  <input type="submit" class="btn btn-primary" value="Update Current Location">
+              </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-6">
+         <div class = "map-container">
+           <center><h1>MAP</h1></center>
+           <div id="map"></div>
+           <div id="legend"><h3>Legend</h3></div>
+         </div>
+       </div>
+    </div>
+
+    <!-- <center>
+
+    </center> -->
+
+  <!-- <div class="location-container">
+    <h3> Current Location</h3>
+  </div> -->
     <script>
       var map;
       var userLat;
-      var userLong;
+      var userLng;
+
+      //get user lat and long
+      <?php echo 'var userLat = '.$userlat.';';?>
+
+      <?php echo 'var userLng = '.$userlng.';';?>
 
       //get notes array from php
       <?php echo 'var notes = '.json_encode($notes).';';?>
@@ -239,19 +313,31 @@ if($stmt = $conn->prepare($sql)){
           disableDefaultUI: true
         });
 
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function (position) {
-            userLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-            map.setCenter(userLocation);
+        //add marker for users location
+        var userLocation = new google.maps.LatLng(userLat, userLng);
+        var userMarker = new google.maps.Marker({
+          position: userLocation,
+          map: map,
+          icon: 'images/blue-dot.png'
+        });
 
-            //add marker for users location
-            var userMarker = new google.maps.Marker({
-              position: userLocation,
-              map: map,
-              icon: 'images/blue-dot.png'
-            });
-          });
-        }
+        map.setCenter(userLocation);
+
+
+
+        // if (navigator.geolocation) {
+        //   navigator.geolocation.getCurrentPosition(function (position) {
+        //     userLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        //     map.setCenter(userLocation);
+        //
+        //     //add marker for users location
+        //     var userMarker = new google.maps.Marker({
+        //       position: userLocation,
+        //       map: map,
+        //       icon: 'images/blue-dot.png'
+        //     });
+        //   });
+        // }
 
       //  map.setCenter({lat: userLat, lng: userLong});
 
@@ -354,7 +440,7 @@ if($stmt = $conn->prepare($sql)){
       //       //var name = markerElem.getAttribute('name');
       //       //var address = markerElem.getAttribute('addresss');
       //       //var type = markerElem.getAttribute('type');
-      //       var point = new google.maps.LatLng(
+      //       var point =  google.maps.LatLng(
       //         parseFloat(markerElem.getAttribute('lat')),
       //         parseFloat(markerElem.getAttribute('lng')));
       //

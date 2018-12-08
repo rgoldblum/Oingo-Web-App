@@ -7,7 +7,7 @@ $notes = array();
 
 //get viewable notes from database
 // Prepare a select statement
-$sql = "SELECT * FROM notes ";
+$sql = "SELECT * FROM note ";
 
 if($stmt = $conn->prepare($sql)){
 
@@ -18,16 +18,14 @@ if($stmt = $conn->prepare($sql)){
 
       //iterate through rows
       while ($row = $result->fetch_assoc()) {
+        // echo '<p>Row:'.$row.'</p>';
         //store row in notes array
         $notes[] = $row;
       }
 
-      $notes = json_encode($notes);
-
-      echo 'var notes = '.$notes.';';
-
-      // End XML file
-      // echo '</markers>';
+      // $notes = json_encode($notes);
+      //
+      // echo $notes;
 
     } else{
         echo "Oops! Something went wrong. Please try again later.";
