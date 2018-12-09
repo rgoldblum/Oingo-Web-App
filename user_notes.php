@@ -118,7 +118,7 @@ require_once "config.php";
 
 
       } else{
-          echo "Error: Statement did not execute".mysqli_error();
+          echo "Error: Statement did not execute".mysqli_error($conn);
       }
     }
 

@@ -40,6 +40,85 @@ require_once "config.php";
 
     <?php
       echo "<h1> Filters made by ".$username."</h1>";
+
+      //fetch filters written by user
+
+      // Prepare a select statement
+      $sql = "SELECT * FROM filters NATURAL JOIN tag WHERE uid = ?";
+
+      if($stmt = $conn->prepare($sql)){
+
+        // Bind variables to the prepared statement as parameters
+        $stmt->bind_param("i", $param_uid);
+
+        // Set parameters
+        $param_uid = $uid;
+
+        // Attempt to execute the prepared statement
+        if($stmt->execute()){
+          //store results
+          $result = $stmt->get_result();
+
+          if($result->num_rows > 0) {
+            //output first note
+            $row = $result->fetch_assoc();
+
+            //start table
+            echo "<table class='table table-hover'>
+                    <thead class='thead-dark'>
+                      <tr>
+                        <th>FID</th>
+                        <th>Name</th>
+                        <th>SID</th>
+                        <th>Tag</th>
+                        <th>Privacy</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                      </tr>
+                    </thead>";
+
+            //add first row
+            echo "<tbody>
+                    <tr>
+                      <td>".$row["fid"]."</td>
+                      <td>".$row["fname"]."</td>
+                      <td>".$row["sid"]."</td>
+                      <td>".$row["ttext"]."</td>
+                      <td>".$row["filter_privacy"]."</td>
+                      <td>".$row["latitude"]."</td>
+                      <td>".$row["longitude"]."</td>
+                    </tr>";
+
+
+
+            //iterate through rows
+            while ($row = $result->fetch_assoc()) {
+              //add rest of rows
+              echo "<tr>
+                      <td>".$row["fid"]."</td>
+                      <td>".$row["fname"]."</td>
+                      <td>".$row["sid"]."</td>
+                      <td>".$row["ttext"]."</td>
+                      <td>".$row["filter_privacy"]."</td>
+                      <td>".$row["latitude"]."</td>
+                      <td>".$row["longitude"]."</td>
+                    </tr>";
+            }
+
+            echo "</tbody>";
+
+          } else {
+              echo "You have not made any filters";
+          }
+
+          echo "</br></br><a href='new_filter.php' class='btn btn-primary'>Create a New Filter</a>";
+
+
+
+        } else{
+            echo "Error: Statement did not execute".mysqli_error($conn);
+        }
+      }
     ?>
     </body>
 </html>

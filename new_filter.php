@@ -23,8 +23,8 @@ $currTime = date("Y-m-d G:i:s", time());
 
 
 // Define variables and initialize with empty values
-$ntext = $notePrivacy = $activeDays =  $startDate = $endDate = $startTime = $endTime = $radius = $sched_id = "";
-$ntext_err = $notePrivacy_err = $activeDays_err =  $startDate_err = $endDate_err = $startTime_err = $endTime_err = $radius_err = "";
+$fname = $sid = $filter_privacy = $activeDays =  $startDate = $endDate = $startTime = $endTime = $radius = $sched_id = $tid = "";
+$fname_err = $sid_err = $filter_privacy_err = $activeDays_err =  $startDate_err = $endDate_err = $startTime_err = $endTime_err = $radius_err = $tid_err = "";
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -32,18 +32,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
   // echo $_POST["startTime"];
   // echo $_POST["endTime"];
 
-    // Validate ntext
-    if(empty(trim($_POST["ntext"]))){
-        $ntext_err = "Please enter body text.";
+    // Validate fname
+    if(empty(trim($_POST["fname"]))){
+        $fname_err = "Please enter a filter name.";
     } else{
-        $ntext = trim($_POST["ntext"]);
+        $fname = trim($_POST["fname"]);
     }
 
-    // Validate notePrivacy
-    if(empty(trim($_POST["notePrivacy"]))){
-        $notePrivacy_err = "Please pick a privacy setting for your note.";
+    //vaildate sid
+    if(empty(trim($_POST["sid"]))){
+        $sid_err = "Please pick a state.";
     } else{
-        $notePrivacy = trim($_POST["notePrivacy"]);
+        $sid = trim($_POST["sid"]);
+    }
+
+    // Validate filter_privacy
+    if(empty(trim($_POST["filter_privacy"]))){
+        $filter_privacy_err = "Please pick a privacy setting for your filter.";
+    } else{
+        $filter_privacy = trim($_POST["filter_privacy"]);
     }
 
     //concatenate active days
@@ -111,35 +118,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $radius = trim($_POST["radius"]);
     }
 
-    //test input function to remove invalid characters
-    // function test_input($data) {
-    //   $data = trim($data);
-    //   $data = stripslashes($data);
-    //   $data = htmlspecialchars($data);
-    //   return $data;
-    // }
-    //
-    // //Validate first name
-    // $fname = test_input($_POST["fname"]);
-    // if (!preg_match("/^[a-zA-Z ]*$/",$fname)) {
-    //   $fname_err = "Only letters and white space allowed";
-    // }
-    //
-    // //Validate last name
-    // $lname = test_input($_POST["lname"]);
-    // if (!preg_match("/^[a-zA-Z ]*$/",$lname)) {
-    //   $lname_err = "Only letters and white space allowed";
-    // }
-    //
-    // //Validate email
-    // $email = test_input($_POST["email"]);
-    // if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    //   $email_err = "Invalid email format";
-    // }
-
+    //validate tid
+    if(empty(trim($_POST["tid"]))){
+        $tid_err = "Please pick a tag.";
+    } else{
+        $tid = trim($_POST["tid"]);
+    }
 
     // Check input errors before inserting in database
-    if(empty($ntext_err) && empty($notePrivacy_err) && empty($activeDays_err) && empty($startDate_err) && empty($endDate_err) && empty($startTime_err) && empty($endTime_err) && empty($radius_err)){
+    if(empty($fname_err) && empty($sid_err) && empty($filter_privacy_err) && empty($activeDays_err) && empty($startDate_err) && empty($endDate_err) && empty($startTime_err) && empty($endTime_err) && empty($radius_err) && empty($tid_err)){
 
         // Prepare an schedule insert statement
         $sql_sched = "INSERT INTO schedules (activeDays, startDate, endDate, startTime, endTime) VALUES (?, ?, ?, ?, ?)";
@@ -148,7 +135,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $sql_get_sched = "SELECT sched_id FROM schedules ORDER BY sched_id DESC LIMIT 1";
 
         // Prepare an note insert statement
-        $sql_note = "INSERT INTO note (uid, ntext, notePrivacy, ntimestamp, sched_id, radius, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql_filter = "INSERT INTO filters (uid, tid, sid, sched_id, fname, filter_privacy, radius, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         if($stmt = $conn->prepare($sql_sched)){
             // Bind variables to the prepared statement as parameters
@@ -179,17 +166,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     echo $sched_id;
                   }
 
-                  if($stmt = $conn->prepare($sql_note)){
+                  if($stmt = $conn->prepare($sql_filter)){
 
                     // Bind variables to the prepared statement as parameters
-                    $stmt->bind_param("isssiddd", $param_uid, $param_ntext, $param_notePrivacy, $param_ntimestamp, $param_sched_id, $param_radius, $param_latitude, $param_longitude);
+                    $stmt->bind_param("iiiissddd", $param_uid, $param_tid, $param_sid, $param_sched_id, $param_fname, $param_filter_privacy, $param_radius, $param_latitude, $param_longitude);
 
                     // Set parameters
                     $param_uid = $uid;
-                    $param_ntext = $ntext;
-                    $param_notePrivacy = $notePrivacy;
-                    $param_ntimestamp = $currTime;
+                    $param_tid = $tid;
+                    $param_sid = $sid;
                     $param_sched_id = $sched_id;
+                    $param_fname = $fname;
+                    $param_filter_privacy = $filter_privacy;
                     $param_radius = $radius;
                     $param_latitude = $userlat;
                     $param_longitude = $userlng;
@@ -197,9 +185,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     // Attempt to execute the note insert statement
                     if($stmt->execute()){
                       // Redirect to user notes page
-                      header("location: user_notes.php");
+                      header("location: user_filters.php");
                     } else {
-                      echo "Error: Note could not be post".mysqli_error($conn);
+                      echo "Error: Filter could not be created".mysqli_error($conn);
                     }
 
                   }
@@ -219,7 +207,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     }
 
     // Close connection
-    $conn->close();
+    // $conn->close();
 }
 
 ?>
@@ -228,7 +216,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>New Note</title>
+    <title>New Filter</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css">
     <style type="text/css">
         body{ font: 14px sans-serif; }
@@ -237,20 +225,105 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 </head>
 <body>
     <div class="wrapper">
-        <h2>New Note Page</h2>
-        <p>Please fill this form to create an new note</p>
+        <h2>New Filter Page</h2>
+        <p>Please fill this form to create an new filter</p>
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
-            <div class="form-group <?php echo (!empty($ntext_err)) ? 'has-error' : ''; ?>">
-                <label>Note Text</label>
-                <input type="text" onkeypress="this.style.width = ((this.value.length + 1) * 8) + 'px';" name="ntext" class="form-control" value="<?php echo $ntext; ?>">
-                <span class="help-block"><?php echo $ntext_err; ?></span>
+            <div class="form-group <?php echo (!empty($fname_err)) ? 'has-error' : ''; ?>">
+                <label>Filter Name</label>
+                <input type="text" name="fname" class="form-control" value="<?php echo $fname; ?>">
+                <span class="help-block"><?php echo $fname_err; ?></span>
             </div>
-            <div class="form-group <?php echo (!empty($notePrivacy_err)) ? 'has-error' : ''; ?>">
+            <div class="form-group <?php echo (!empty($sid_err)) ? 'has-error' : ''; ?>">
+                <label>State</label>
+                <select name = "sid">
+                  <?php
+                    // Include config file
+                    require_once "config.php";
+
+                    //prepare select user states
+                    $sql_states = "SELECT sid, sname FROM state WHERE uid = ?";
+
+                    if($stmt = $conn->prepare($sql_states)) {
+                      // Bind variables to the prepared statement as parameters
+                      $stmt->bind_param("i", $param_uid);
+
+                      // Set parameters
+                      $param_uid = $uid;
+
+                      //execute statment
+                      if($stmt->execute()) {
+
+                        $result = $stmt->get_result();
+
+                        if($result->num_rows > 0) {
+
+                          while ($row = $result->fetch_assoc()) {
+                            echo '<option value="'.$row["sid"].'">'.$row["sname"].'</option>';
+                          }
+
+                        } else {
+                          echo "No states available";
+                        }
+
+                      } else {
+                          echo "Error: Statement could not be executed".mysqli_error($conn);
+                      }
+
+                    } else {
+                        echo "Error: Statement could not be prepared".mysqli_error($conn);
+                    }
+
+                    // $conn->close();
+                   ?>
+                </select>
+                <span class="help-block"><?php echo $sid_err; ?></span>
+            </div>
+            <div class="form-group <?php echo (!empty($tid_err)) ? 'has-error' : ''; ?>">
+                <label>Tag</label>
+                <select name = "tid">
+                  <?php
+                    // Include config file
+                    require_once "config.php";
+
+                    //prepare select all tags
+                    $sql_tags = "SELECT * FROM tag";
+
+                    if($stmt = $conn->prepare($sql_tags)) {
+
+                      //execute statment
+                      if($stmt->execute()) {
+
+                        $result = $stmt->get_result();
+
+                        if($result->num_rows > 0) {
+
+                          while ($row = $result->fetch_assoc()) {
+                            echo '<option value="'.$row["tid"].'">'.$row["ttext"].'</option>';
+                          }
+
+                        } else {
+                          echo "No tags available";
+                        }
+
+                      } else {
+                          echo "Error: Statement could not be executed".mysqli_error($conn);
+                      }
+
+                    } else {
+                        echo "Error: Statement could not be prepared".mysqli_error($conn);
+                    }
+
+                    // $conn->close();
+                   ?>
+                </select>
+                <span class="help-block"><?php echo $tid_err; ?></span>
+            </div>
+            <div class="form-group <?php echo (!empty($filter_privacy_err)) ? 'has-error' : ''; ?>">
                 <label>Privacy</label><br>
-                <input type="radio" name="notePrivacy" class="form-control" value="self"> Visible to Me Only
-                <input type="radio" name="notePrivacy" class="form-control" value="friends"> Visible to my friends and me only
-                <input type="radio" name="notePrivacy" class="form-control" value="public">Visible to anyone (Public)
-                <span class="help-block"><?php echo $notePrivacy_err; ?></span>
+                <input type="radio" name="filter_privacy" class="form-control" value="self"> Visible to Me Only
+                <input type="radio" name="filter_privacy" class="form-control" value="friends"> Visible to my friends and me only
+                <input type="radio" name="filter_privacy" class="form-control" value="public">Visible to anyone (Public)
+                <span class="help-block"><?php echo $filter_privacy_err; ?></span>
             </div>
             <div class="form-group <?php echo (!empty($activeDays_err)) ? 'has-error' : ''; ?>">
                 <label>Active Days</label><br>
@@ -296,3 +369,5 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     </div>
 </body>
 </html>
+
+<?php $conn->close(); ?>
