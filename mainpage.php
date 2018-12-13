@@ -8,7 +8,9 @@ require_once "config.php";
 //Inlude fetch user data
 require_once "fetch_user_data.php";
 
-$userlat_err = $userlng_err = "";
+$currTime = "";
+
+$userlat_err = $userlng_err = $currTime_err = "";
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -26,8 +28,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       $userlng = trim($_POST["userlng"]);
   }
 
+  // Check if current time is empty
+  if(empty(trim($_POST["currTime"]))){
+      $currTime_err = "Please enter a time.";
+  } else{
+      $currTime = trim($_POST["currTime"]);
+      echo $currTime;
+  }
+
   // Validate credentials
-  if(empty($userlat_err) && empty($userlng_err)){
+  if(empty($userlat_err) && empty($userlng_err) && empty($currTime_err)){
       // Prepare a select statement
       $sql = "UPDATE users SET latitude = ?, longitude = ? WHERE uid = ?";
 
@@ -35,7 +45,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           // Bind variables to the prepared statement as parameters
           $stmt->bind_param("ddi", $param_userlat, $param_userlng, $param_uid);
 
-          echo $uid;
+          //echo $uid;
 
           // Set parameters
           $param_userlat = $userlat;
@@ -44,7 +54,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
           // Attempt to execute the prepared statement
           if($stmt->execute()){
-            echo "We did it!";
+            //echo "We did it!";
               // Store result
               //$stmt->store_result();
 
@@ -177,17 +187,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           <?php echo 'Latitude: '.$userlat.', Longitude: '.$userlng;?>
           <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
               <div class="form-group <?php echo (!empty($userlat_err)) ? 'has-error' : ''; ?>">
-                  <label>Latitude</label>
+                  <label>Current Latitude</label>
                   <input type="number" step = "any" name="userlat" class="form-control" value="<?php echo $userlat; ?>">
                   <span class="help-block"><?php echo $userlat_err; ?></span>
               </div>
               <div class="form-group <?php echo (!empty($userlng_err)) ? 'has-error' : ''; ?>">
-                  <label>Longitude</label>
+                  <label>Current Longitude</label>
                   <input type="number" step = "any" name="userlng" class="form-control" value="<?php echo $userlng; ?>">
                   <span class="help-block"><?php echo $userlng_err; ?></span>
               </div>
+              <div class="form-group <?php echo (!empty($currTime_err)) ? 'has-error' : ''; ?>">
+                  <label>Current Time</label>
+                  <input type="time" name="currTime" class="form-control" value="<?php echo $currTime; ?>">
+                  <span class="help-block"><?php echo $currTime_err; ?></span>
+              </div>
               <div class="form-group">
-                  <input type="submit" class="btn btn-primary" value="Update Current Location">
+                  <input type="submit" class="btn btn-primary" value="Update Current Location and Time">
               </div>
           </form>
         </div>
@@ -256,6 +271,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       //   userLong = position.coords.longitude;
       // }
 
+      //function to update current hour text
+      function updateHour(value) {
+        document.getElementById('currentHour').innerHTML = "Current Hour: " + value;
+      }
+
+      //function to update current minute text
+      function updateMin(value) {
+        document.getElementById('currentMin').innerHTML = "Current Minute: " + value;
+      }
+
       //function to download xml file with markers
       function downloadUrl(url,callback) {
         var request = window.ActiveXObject ?
@@ -277,6 +302,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       function addNoteMarkers(notes) {
         // infowindow
         var infowindow = new google.maps.InfoWindow;
+        var noteIcon = '';
 
         Array.prototype.forEach.call(notes, function(note){
           //create text element for info window
@@ -286,11 +312,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           strong.textContent = note.ntext;
           content.appendChild(strong);
 
+          //set icon based on privacy
+          if(note.notePrivacy == 'public') {
+            noteIcon = 'images/sticky-note-red-small.png';
+          } else if (note.notePrivacy == 'friends') {
+              noteIcon = 'images/sticky-note-blue-small.png';
+          } else if (note.notePrivacy == 'self') {
+              noteIcon = 'images/sticky-note-yellow-small.png';
+          }
+
           //maker for note
           var marker = new google.maps.Marker({
             position: new google.maps.LatLng(note.latitude, note.longitude),
             title: '' + note.nid,
-            map: map
+            map: map,
+            icon: noteIcon
           });
 
           marker.addListener('click', function() {

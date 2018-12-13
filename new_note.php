@@ -150,6 +150,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         // Prepare an note insert statement
         $sql_note = "INSERT INTO note (uid, ntext, notePrivacy, ntimestamp, sched_id, radius, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
+        //Prepare select last auto_inc value for sched_id statement
+        // $sql_get_sched_auto = "SELECT ";
+
         if($stmt = $conn->prepare($sql_sched)){
             // Bind variables to the prepared statement as parameters
             $stmt->bind_param("sssss", $param_activeDays, $param_startDate, $param_endDate, $param_startTime, $param_endTime);
