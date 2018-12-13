@@ -281,23 +281,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         document.getElementById('currentMin').innerHTML = "Current Minute: " + value;
       }
 
-      //function to download xml file with markers
-      function downloadUrl(url,callback) {
-        var request = window.ActiveXObject ?
-          new ActiveXObject('Microsoft.XMLHTTP') :
-          new XMLHttpRequest;
-
-        request.onreadystatechange = function() {
-          if (request.readyState == 4) {
-            request.onreadystatechange = function(){};
-            callback(request, request.status);
-          }
-        };
-
-        request.open('GET', url, true);
-        request.send(null);
-      }
-
       //function to add note markers to map
       function addNoteMarkers(notes) {
         // infowindow
@@ -307,7 +290,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         Array.prototype.forEach.call(notes, function(note){
           //create text element for info window
           var content = document.createElement('a');
-          content.setAttribute('href', 'notepage.php?nid="'+note.nid+'"');
+          content.setAttribute('href', 'notepage.php?nid='+note.nid);
           var strong = document.createElement('strong');
           strong.textContent = note.ntext;
           content.appendChild(strong);

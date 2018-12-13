@@ -84,7 +84,7 @@ require_once "config.php";
           //add first row
           echo "<tbody>
                   <tr>
-                    <td>".$row["nid"]."</td>
+                    <td><a href='notepage.php?nid=".$row["nid"]."'>".$row["nid"]."</td>
                     <td>".$row["ntext"]."</td>
                     <td>".$row["notePrivacy"]."</td>
                     <td>".$row["latitude"]."</td>
@@ -98,7 +98,7 @@ require_once "config.php";
           while ($row = $result->fetch_assoc()) {
             //add rest of rows
             echo "<tr>
-                    <td>".$row["nid"]."</td>
+                    <td><a href='notepage.php?nid=".$row["nid"]."'>".$row["nid"]."</td>
                     <td>".$row["ntext"]."</td>
                     <td>".$row["notePrivacy"]."</td>
                     <td>".$row["latitude"]."</td>
@@ -123,6 +123,7 @@ require_once "config.php";
     }
 
     ?>
+
 
   </body>
 

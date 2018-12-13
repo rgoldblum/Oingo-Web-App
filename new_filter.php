@@ -42,8 +42,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     //vaildate sid
     if(empty(trim($_POST["sid"]))){
         $sid_err = "Please pick a state.";
-    } else{
-        $sid = trim($_POST["sid"]);
+    } else {
+        if($_POST["sid"] == "NULL") {
+          $sid = NULL;
+        } else {
+          $sid = trim($_POST["sid"]);
+        }
     }
 
     // Validate filter_privacy
@@ -55,26 +59,30 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     //concatenate active days
     if(isset($_POST["Mon"])) {
-      $activeDays .= $_POST["Mon"].", ";
+      $activeDays .= $_POST["Mon"]." ";
     }
     if(isset($_POST["Tue"])) {
-      $activeDays .= $_POST["Tue"].", ";
+      $activeDays .= $_POST["Tue"]." ";
     }
     if(isset($_POST["Wed"])) {
-      $activeDays .= $_POST["Wed"].", ";
+      $activeDays .= $_POST["Wed"]." ";
     }
     if(isset($_POST["Thur"])) {
-      $activeDays .= $_POST["Thur"].", ";
+      $activeDays .= $_POST["Thur"]." ";
     }
     if(isset($_POST["Fri"])) {
-      $activeDays .= $_POST["Fri"].", ";
+      $activeDays .= $_POST["Fri"]." ";
     }
     if(isset($_POST["Sat"])) {
-      $activeDays .= $_POST["Sat"].", ";
+      $activeDays .= $_POST["Sat"]." ";
     }
     if(isset($_POST["Sun"])) {
-      $activeDays .= $_POST["Sun"];
+      $activeDays .= $_POST["Sun"]." ";
     }
+
+    //add commas to seperate days
+    $activeDays = implode(", ", preg_split("/[\s]+/", $activeDays));
+    $activeDays = substr_replace($activeDays,"",-2);
 
     // Validate activeDays
     if(empty(trim($activeDays))){
@@ -97,6 +105,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $endDate = trim($_POST["endDate"]);
     }
 
+    //validate start date before end date
+    if($startDate > $endDate) {
+      $startDate_err = "Start Date must be before or on the same day as End Date: ".$startDate." ".$endDate;
+    }
+
     // Validate startTime
     if(empty(trim($_POST["startTime"]))){
         $startTime_err = "Please enter a time of day to start showing the note.";
@@ -109,6 +122,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $endTime_err = "Please enter a time of day to stop showing the note.";
     } else{
         $endTime = trim($_POST["endTime"]);
+    }
+
+    //validate start time before end time
+    if($startTime >= $endTime) {
+      $startTime_err = "Start Time must be before End Time: ".$startTime." ".$endTime;
     }
 
     // Validate radius
@@ -236,12 +254,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             <div class="form-group <?php echo (!empty($sid_err)) ? 'has-error' : ''; ?>">
                 <label>State</label>
                 <select name = "sid">
+                  <option value="NULL">None</option>
                   <?php
                     // Include config file
                     require_once "config.php";
 
                     //prepare select user states
-                    $sql_states = "SELECT sid, sname FROM state WHERE uid = ?";
+                    $sql_states = "SELECT sid, sname FROM state WHERE uid = ? ORDER BY sid";
 
                     if($stmt = $conn->prepare($sql_states)) {
                       // Bind variables to the prepared statement as parameters
@@ -362,7 +381,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <span class="help-block"><?php echo $radius_err; ?></span>
             </div>
             <div class="form-group">
-                <input type="submit" class="btn btn-primary" value="Post Note">
+                <input type="submit" class="btn btn-primary" value="Create Filter">
                 <input type="reset" class="btn btn-default" value="Reset">
             </div>
         </form>
