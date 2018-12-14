@@ -7,13 +7,14 @@ require_once "check_login.php";
 require_once "config.php";
 
 //array to store notes
-$notes = array();
+//$notes = array();
 
 $userlat;
 $userlng;
+$username;
 
 // Prepare a select statement
-$sql = "SELECT latitude, longitude FROM users WHERE uid = ? ";
+$sql = "SELECT * FROM users WHERE uid = ? ";
 
 if($stmt = $conn->prepare($sql)){
 
@@ -34,6 +35,7 @@ if($stmt = $conn->prepare($sql)){
       //store row in notes array
       $userlat = $row['latitude'];
       $userlng = $row['longitude'];
+      $username = $row['username'];
     }
     // echo $userlat;
     // echo $userlng;

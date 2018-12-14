@@ -58,7 +58,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       $activeDays .= $_POST["Wed"].", ";
     }
     if(isset($_POST["Thur"])) {
-      $activeDays .= $_POST["Thur"].", ";
+      $activeDays .= $_POST["Thu"].", ";
     }
     if(isset($_POST["Fri"])) {
       $activeDays .= $_POST["Fri"].", ";
@@ -396,7 +396,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <input type="checkbox" name="Mon" value="Mon">Monday<br>
                 <input type="checkbox" name="Tue" value="Tue">Tuesday<br>
                 <input type="checkbox" name="Wed" value="Wed">Wednesday<br>
-                <input type="checkbox" name="Thur" value="Thur">Thursday<br>
+                <input type="checkbox" name="Thu" value="Thu">Thursday<br>
                 <input type="checkbox" name="Fri" value="Fri">Friday<br>
                 <input type="checkbox" name="Sat" value="Sat">Saturday<br>
                 <input type="checkbox" name="Sun" value="Sun">Sunday<br>

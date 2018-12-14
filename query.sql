@@ -1,4 +1,4 @@
-SELECT DISTINCT note.nid
+SELECT DISTINCT note.nid, note.ntext
 FROM users, note NATURAL JOIN schedules
 WHERE
 (

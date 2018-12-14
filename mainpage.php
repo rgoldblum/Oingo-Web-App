@@ -8,11 +8,24 @@ require_once "config.php";
 //Inlude fetch user data
 require_once "fetch_user_data.php";
 
-require_once "fetch_notes.php";
+//require_once "fetch_notes.php";
 
 $currTime = "";
 
 $userlat_err = $userlng_err = $currTime_err = "";
+
+//array to store notes
+$notes = array();
+
+//Set to eastern time zone
+date_default_timezone_set("America/New_York");
+
+//get current time
+$currDate = date("Y-m-d", time());
+
+$dayOfWeek = date("D", time());
+//
+// echo $currDate." ".$dayOfWeek;
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -35,7 +48,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       $currTime_err = "Please enter a time.";
   } else{
       $currTime = trim($_POST["currTime"]);
-      echo $currTime;
+    //  echo $currTime;
   }
 
   // Validate credentials
@@ -82,12 +95,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
               //         }
               //     }
               } else{
-                  // Display an error message if username doesn't exist
+                  // Display an error message if bad coordinates input
                   $userlng_err = "Incorrect coordinates input.";
               }
 
-              // Close statement
-              $stmt->close();
 
           } else{
               echo "Oops! Something went wrong. Please try again later.";
@@ -95,6 +106,70 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       } else{
           echo "statement wasnt prepared";
           echo mysqli_error($conn);
+      }
+
+
+
+      //get viewable notes from database
+      // Prepare a select statement
+      $sql = "SELECT DISTINCT note.nid, note.ntext, note.notePrivacy, note.latitude, note.longitude
+      FROM users, note NATURAL JOIN schedules
+      WHERE
+      (
+        users.uid = ?
+        AND (getDistance(users.latitude, users.longitude, note.latitude, note.longitude) <= note.radius)
+        AND (withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true')
+        AND ((note.notePrivacy = 'self' AND users.uid = note.uid) OR
+        (note.notePrivacy = 'friends' AND EXISTS (SELECT * FROM Friendship WHERE users.uid = friendship.uid AND note.uid = friendship.friends_uid)) OR (note.notePrivacy = 'public'))
+        AND note.nid NOT IN
+
+        (
+          SELECT DISTINCT note.nid
+          FROM users NATURAL JOIN state, filters NATURAL JOIN schedules, note NATURAL JOIN tag_in_note NATURAL JOIN tag
+          WHERE
+          (
+            users.uid = ?
+            AND ((state.isActive = 'True' AND filters.sid = state.sid) OR (users.uid = filters.uid AND filters.sid IS NULL))
+            AND ((filters.radius IS NOT NULL AND (getDistance(users.latitude, users.longitude, filters.latitude, filters.longitude) >= filters.radius))
+            OR (filters.sched_id IS NOT NULL AND (withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'false'))
+            OR (tag.tid != filters.tid AND filters.tid IS NOT NULL)
+            OR (filters.filter_privacy IS NOT NULL AND (note.notePrivacy NOT LIKE (filters.filter_privacy))))
+          )
+        )
+      )";
+
+      if($stmt = $conn->prepare($sql)){
+
+        //bind parameters
+        $stmt->bind_param("isssisss", $param_uid, $param_day, $param_date, $param_time, $param_uid2, $param_day2, $param_date2, $param_time2);
+
+        //set parameters
+        $param_uid = $param_uid2 = $uid;
+        $param_day = $param_day2 = $dayOfWeek;
+        $param_date = $param_date2 = $currDate;
+        $param_time = $param_time2 = $currTime;
+
+        // Attempt to execute the prepared statement
+        if($stmt->execute()){
+          //store results
+          $result = $stmt->get_result();
+
+          //iterate through rows
+          while ($row = $result->fetch_assoc()) {
+            // echo '<p>Row:'.$row.'</p>';
+            //store row in notes array
+            $notes[] = $row;
+          }
+
+          // $notes = json_encode($notes);
+          //
+          // echo $notes;
+
+        } else{
+            echo "Error: Statement not executed: ".mysqli_error($conn);
+        }
+      } else {
+          echo "Error: Statement not prepared: ".mysqli_error($conn);
       }
 
 
@@ -186,7 +261,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       <div class="col-md-6">
         <div class="location-container">
           <center><h1> Current Location</h1></center>
-          <?php echo 'Latitude: '.$userlat.', Longitude: '.$userlng;?>
+          <?php //echo 'Latitude: '.$userlat.', Longitude: '.$userlng;?>
           <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
               <div class="form-group <?php echo (!empty($userlat_err)) ? 'has-error' : ''; ?>">
                   <label>Current Latitude</label>
@@ -330,7 +405,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           //make center user's current location
           //center: {lat: -34.397, lng: 150.644},
           // center: {lat: , lng: +userLong},
-          zoom: 8,
+          zoom: 11,
           disableDefaultUI: true
         });
 

@@ -77,6 +77,7 @@ require_once "config.php";
                       <th>Privacy</th>
                       <th>Latitude</th>
                       <th>Longitude</th>
+                      <th>Radius of Interest</th>
                       <th>Active Days</th>
                       <th>Start Date</th>
                       <th>End Date</th>
@@ -94,6 +95,7 @@ require_once "config.php";
                     <td>".$row["notePrivacy"]."</td>
                     <td>".$row["latitude"]."</td>
                     <td>".$row["longitude"]."</td>
+                    <td>".$row["radius"]."</td>
                     <td>".$row["activeDays"]."</td>
                     <td>".$row["startDate"]."</td>
                     <td>".$row["endDate"]."</td>
@@ -113,6 +115,7 @@ require_once "config.php";
                     <td>".$row["notePrivacy"]."</td>
                     <td>".$row["latitude"]."</td>
                     <td>".$row["longitude"]."</td>
+                    <td>".$row["radius"]."</td>
                     <td>".$row["activeDays"]."</td>
                     <td>".$row["startDate"]."</td>
                     <td>".$row["endDate"]."</td>
