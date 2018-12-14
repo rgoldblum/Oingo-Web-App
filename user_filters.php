@@ -44,7 +44,7 @@ require_once "config.php";
       //fetch filters written by user
 
       // Prepare a select statement
-      $sql = "SELECT * FROM filters NATURAL JOIN tag WHERE uid = ?";
+      $sql = "SELECT * FROM filters NATURAL LEFT OUTER JOIN tag NATURAL LEFT OUTER JOIN state NATURAL LEFT OUTER JOIN schedules WHERE uid = ?";
 
       if($stmt = $conn->prepare($sql)){
 
@@ -69,11 +69,17 @@ require_once "config.php";
                       <tr>
                         <th>FID</th>
                         <th>Name</th>
-                        <th>SID</th>
+                        <th>State</th>
                         <th>Tag</th>
                         <th>Privacy</th>
                         <th>Latitude</th>
                         <th>Longitude</th>
+                        <th>Active Days</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+
                       </tr>
                     </thead>";
 
@@ -82,11 +88,16 @@ require_once "config.php";
                     <tr>
                       <td>".$row["fid"]."</td>
                       <td>".$row["fname"]."</td>
-                      <td>".$row["sid"]."</td>
+                      <td>".$row["sname"]."</td>
                       <td>".$row["ttext"]."</td>
                       <td>".$row["filter_privacy"]."</td>
                       <td>".$row["latitude"]."</td>
                       <td>".$row["longitude"]."</td>
+                      <td>".$row["activeDays"]."</td>
+                      <td>".$row["startDate"]."</td>
+                      <td>".$row["endDate"]."</td>
+                      <td>".$row["startTime"]."</td>
+                      <td>".$row["endTime"]."</td>
                     </tr>";
 
 
@@ -97,11 +108,16 @@ require_once "config.php";
               echo "<tr>
                       <td>".$row["fid"]."</td>
                       <td>".$row["fname"]."</td>
-                      <td>".$row["sid"]."</td>
+                      <td>".$row["sname"]."</td>
                       <td>".$row["ttext"]."</td>
                       <td>".$row["filter_privacy"]."</td>
                       <td>".$row["latitude"]."</td>
                       <td>".$row["longitude"]."</td>
+                      <td>".$row["activeDays"]."</td>
+                      <td>".$row["startDate"]."</td>
+                      <td>".$row["endDate"]."</td>
+                      <td>".$row["startTime"]."</td>
+                      <td>".$row["endTime"]."</td>
                     </tr>";
             }
 

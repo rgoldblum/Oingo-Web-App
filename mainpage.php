@@ -8,6 +8,8 @@ require_once "config.php";
 //Inlude fetch user data
 require_once "fetch_user_data.php";
 
+require_once "fetch_notes.php";
+
 $currTime = "";
 
 $userlat_err = $userlng_err = $currTime_err = "";

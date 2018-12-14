@@ -168,66 +168,50 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             // Attempt to execute the schedule insert statement
             if($stmt->execute()){
+              $sched_id = $conn->insert_id;
 
-              if($stmt = $conn->prepare($sql_get_sched)){
+              if($stmt = $conn->prepare($sql_filter)){
 
-                // Attempt to execute the get last schedule statement
+                // Bind variables to the prepared statement as parameters
+                $stmt->bind_param("iiiissddd", $param_uid, $param_tid, $param_sid, $param_sched_id, $param_fname, $param_filter_privacy, $param_radius, $param_latitude, $param_longitude);
+
+                // Set parameters
+                $param_uid = $uid;
+                $param_tid = $tid;
+                $param_sid = $sid;
+                $param_sched_id = $sched_id;
+                $param_fname = $fname;
+                $param_filter_privacy = $filter_privacy;
+                $param_radius = $radius;
+                $param_latitude = $userlat;
+                $param_longitude = $userlng;
+
+                // Attempt to execute the note insert statement
                 if($stmt->execute()){
-
-                  $result = $stmt->get_result();
-
-                  //iterate through rows
-                  while ($row = $result->fetch_assoc()) {
-                    // echo '<p>Row:'.$row.'</p>';
-                    //store row in notes array
-                    $sched_id = $row["sched_id"];
-                    echo $sched_id;
-                  }
-
-                  if($stmt = $conn->prepare($sql_filter)){
-
-                    // Bind variables to the prepared statement as parameters
-                    $stmt->bind_param("iiiissddd", $param_uid, $param_tid, $param_sid, $param_sched_id, $param_fname, $param_filter_privacy, $param_radius, $param_latitude, $param_longitude);
-
-                    // Set parameters
-                    $param_uid = $uid;
-                    $param_tid = $tid;
-                    $param_sid = $sid;
-                    $param_sched_id = $sched_id;
-                    $param_fname = $fname;
-                    $param_filter_privacy = $filter_privacy;
-                    $param_radius = $radius;
-                    $param_latitude = $userlat;
-                    $param_longitude = $userlng;
-
-                    // Attempt to execute the note insert statement
-                    if($stmt->execute()){
-                      // Redirect to user notes page
-                      header("location: user_filters.php");
-                    } else {
-                      echo "Error: Filter could not be created".mysqli_error($conn);
-                    }
-
-                  }
-
+                  // Redirect to user notes page
+                  header("location: user_filters.php");
+                } else {
+                  echo "Error: Statement could note be executed:".mysqli_error($conn);
                 }
+
+              } else {
+                  echo "Error: Statement not prepared: ".mysqli_error($conn);
               }
 
-            } else{
-                echo "Something went wrong. Please try again later.";
-                echo mysqli_error($conn);
-
+        // // Close statement
+        // $stmt->close();
+            } else {
+                echo "Error: Statement not executed: ".mysqli_error($conn);
             }
-        }
 
-        // Close statement
-        $stmt->close();
-    }
+          } else {
+              echo "Error: Statement not executed: ".mysqli_error($conn);
+          }
 
     // Close connection
     // $conn->close();
+    }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -388,5 +372,3 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     </div>
 </body>
 </html>
-
-<?php $conn->close(); ?>

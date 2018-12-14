@@ -24,7 +24,8 @@ $currTime = date("Y-m-d G:i:s", time());
 
 // Define variables and initialize with empty values
 $ntext = $notePrivacy = $activeDays =  $startDate = $endDate = $startTime = $endTime = $radius = $sched_id = "";
-$ntext_err = $notePrivacy_err = $activeDays_err =  $startDate_err = $endDate_err = $startTime_err = $endTime_err = $radius_err = "";
+$tag = array();
+$ntext_err = $notePrivacy_err = $activeDays_err =  $startDate_err = $endDate_err = $startTime_err = $endTime_err = $radius_err = $tag_err = "";
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -73,7 +74,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     if(empty(trim($activeDays))){
         $activeDays_err = "Please select day(s) you want this note to be active.";
     } else{
-
     }
 
     // Validate startDate
@@ -111,35 +111,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $radius = trim($_POST["radius"]);
     }
 
-    //test input function to remove invalid characters
-    // function test_input($data) {
-    //   $data = trim($data);
-    //   $data = stripslashes($data);
-    //   $data = htmlspecialchars($data);
-    //   return $data;
-    // }
-    //
-    // //Validate first name
-    // $fname = test_input($_POST["fname"]);
-    // if (!preg_match("/^[a-zA-Z ]*$/",$fname)) {
-    //   $fname_err = "Only letters and white space allowed";
-    // }
-    //
-    // //Validate last name
-    // $lname = test_input($_POST["lname"]);
-    // if (!preg_match("/^[a-zA-Z ]*$/",$lname)) {
-    //   $lname_err = "Only letters and white space allowed";
-    // }
-    //
-    // //Validate email
-    // $email = test_input($_POST["email"]);
-    // if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    //   $email_err = "Invalid email format";
-    // }
+    //Validate tags
+    if(empty(trim($_POST["tags"]))){
+        $tag_err = "Please enter at least 1 tag";
+    } else{
+        $tags = explode(", ", $_POST["tags"]);
+    }
+
 
 
     // Check input errors before inserting in database
-    if(empty($ntext_err) && empty($notePrivacy_err) && empty($activeDays_err) && empty($startDate_err) && empty($endDate_err) && empty($startTime_err) && empty($endTime_err) && empty($radius_err)){
+    if(empty($ntext_err) && empty($notePrivacy_err) && empty($activeDays_err) && empty($startDate_err) && empty($endDate_err) && empty($startTime_err) && empty($endTime_err) && empty($radius_err) && empty($tag_err)){
 
         // Prepare an schedule insert statement
         $sql_sched = "INSERT INTO schedules (activeDays, startDate, endDate, startTime, endTime) VALUES (?, ?, ?, ?, ?)";
@@ -149,6 +131,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         // Prepare an note insert statement
         $sql_note = "INSERT INTO note (uid, ntext, notePrivacy, ntimestamp, sched_id, radius, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        //prepare check tag statement
+        $sql_check_tag = "SELECT * FROM tag WHERE ttext = ?";
+
+        //Prepare tag insert statement
+        $sql_insert_tag = "INSERT INTO tag (ttext) VALUES (?)";
+
+        //Prepare tag_in_note insert statement
+        $sql_tag_in_note = "INSERT INTO tag_in_note (nid, tid) VALUES (?, ?)";
+
 
         //Prepare select last auto_inc value for sched_id statement
         // $sql_get_sched_auto = "SELECT ";
@@ -167,48 +159,192 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             // Attempt to execute the schedule insert statement
             if($stmt->execute()){
 
-              if($stmt = $conn->prepare($sql_get_sched)){
+              $sched_id = $conn->insert_id;
 
-                // Attempt to execute the get last schedule statement
+              if($stmt = $conn->prepare($sql_note)){
+
+                // Bind variables to the prepared statement as parameters
+                $stmt->bind_param("isssiddd", $param_uid, $param_ntext, $param_notePrivacy, $param_ntimestamp, $param_sched_id, $param_radius, $param_latitude, $param_longitude);
+
+                // Set parameters
+                $param_uid = $uid;
+                $param_ntext = $ntext;
+                $param_notePrivacy = $notePrivacy;
+                $param_ntimestamp = $currTime;
+                $param_sched_id = $sched_id;
+                $param_radius = $radius;
+                $param_latitude = $userlat;
+                $param_longitude = $userlng;
+
+                // Attempt to execute the note insert statement
                 if($stmt->execute()){
 
-                  $result = $stmt->get_result();
+                  $nid = $conn->insert_id;
 
-                  //iterate through rows
-                  while ($row = $result->fetch_assoc()) {
-                    // echo '<p>Row:'.$row.'</p>';
-                    //store row in notes array
-                    $sched_id = $row["sched_id"];
-                    echo $sched_id;
-                  }
+                  //iterate through tags array
+                  foreach ($tags as $ttext) {
 
-                  if($stmt = $conn->prepare($sql_note)){
+                    //check if tag already exists
+                    if($stmt = $conn->prepare($sql_check_tag)) {
+                      $stmt->bind_param("s", $param_ttext);
 
-                    // Bind variables to the prepared statement as parameters
-                    $stmt->bind_param("isssiddd", $param_uid, $param_ntext, $param_notePrivacy, $param_ntimestamp, $param_sched_id, $param_radius, $param_latitude, $param_longitude);
+                      $param_ttext = '#'.$ttext;
 
-                    // Set parameters
-                    $param_uid = $uid;
-                    $param_ntext = $ntext;
-                    $param_notePrivacy = $notePrivacy;
-                    $param_ntimestamp = $currTime;
-                    $param_sched_id = $sched_id;
-                    $param_radius = $radius;
-                    $param_latitude = $userlat;
-                    $param_longitude = $userlng;
+                      if($stmt->execute()) {
+                        $result = $stmt->get_result();
 
-                    // Attempt to execute the note insert statement
-                    if($stmt->execute()){
-                      // Redirect to user notes page
-                      header("location: user_notes.php");
+                        //if tag exists, only insert into tag_in_note, not tag
+                        if($result->num_rows > 0) {
+                          $tag = $result->fetch_assoc();
+
+                          if($stmt = $conn->prepare($sql_tag_in_note)) {
+                            $stmt->bind_param("ii", $param_nid, $param_tid);
+
+                            $param_nid = $nid;
+                            $param_tid = $tag["tid"];
+
+                            if($stmt->execute()) {
+
+                            } else {
+                                echo "Error: Statement not executed: ".mysqli_error($conn);
+                            }
+
+                          } else {
+                              echo "Error: Statement not prepared: ".mysqli_error($conn);
+                          }
+
+                        } else {
+                          //insert into tag then into tag_in_note
+                          if($stmt = $conn->prepare($sql_insert_tag)) {
+                            $stmt->bind_param("s", $param_ttext);
+                            $param_ttext = '#'.$ttext;
+
+                            if($stmt->execute()) {
+                              //insert tag_in_note
+                              $tid = $conn->insert_id;
+
+                              if($stmt = $conn->prepare($sql_tag_in_note)) {
+                                $stmt->bind_param("ii", $param_nid, $param_tid);
+
+                                $param_nid = $nid;
+                                $param_tid = $tid;
+
+                                if($stmt->execute()) {
+
+                                } else {
+                                    echo "Error: Statement not executed: ".mysqli_error($conn);
+                                }
+
+                              } else {
+                                  echo "Error: Statement not prepared: ".mysqli_error($conn);
+                              }
+
+                            } else {
+                                echo "Error: Statement not executed: ".mysqli_error($conn);
+                            }
+                          }
+                        }
+
+                      } else {
+                          echo "Error: Statement not executed: ".mysqli_error($conn);
+                      }
                     } else {
-                      echo "Error: Note could not be post".mysqli_error($conn);
+                      echo "Error: Statement not prepared: ".mysqli_error($conn);
                     }
 
                   }
 
+                  // Redirect to user notes page
+                  header("location: user_notes.php");
+                } else {
+                  echo "Error: Note could not be posted".mysqli_error($conn);
                 }
+
               }
+
+              // if($stmt = $conn->prepare($sql_get_sched)){
+              //
+              //   // Attempt to execute the get last schedule statement
+              //   if($stmt->execute()){
+              //
+              //     $result = $stmt->get_result();
+              //
+              //     //iterate through rows
+              //     while ($row = $result->fetch_assoc()) {
+              //       // echo '<p>Row:'.$row.'</p>';
+              //       //store row in notes array
+              //       $sched_id = $row["sched_id"];
+              //       echo $sched_id;
+              //     }
+              //
+              //     if($stmt = $conn->prepare($sql_note)){
+              //
+              //       // Bind variables to the prepared statement as parameters
+              //       $stmt->bind_param("isssiddd", $param_uid, $param_ntext, $param_notePrivacy, $param_ntimestamp, $param_sched_id, $param_radius, $param_latitude, $param_longitude);
+              //
+              //       // Set parameters
+              //       $param_uid = $uid;
+              //       $param_ntext = $ntext;
+              //       $param_notePrivacy = $notePrivacy;
+              //       $param_ntimestamp = $currTime;
+              //       $param_sched_id = $sched_id;
+              //       $param_radius = $radius;
+              //       $param_latitude = $userlat;
+              //       $param_longitude = $userlng;
+              //
+              //       // Attempt to execute the note insert statement
+              //       if($stmt->execute()){
+              //
+              //         //iterate through tags array
+              //         foreach ($tags as $ttext) {
+              //
+              //           //check if tag already exists
+              //           if($stmt = $conn->prepare($sql_check_tag)) {
+              //             $stmt->bind_param("s", $param_ttext)
+              //
+              //             $param_ttext = '#'.$ttext;
+              //
+              //             if($stmt->execute()) {
+              //               $result = $stmt->get_result();
+              //
+              //               //if tag exists, only insert into tag_in_note, not tag
+              //               if($result->num_rows > 0) {
+              //                 $tag = $result->fetch_assoc();
+              //
+              //
+              //
+              //                 if($stmt = $conn->prepare($sql_tag_in_note)) {
+              //                   $stmt->bind_param("ii", $param_nid, $param_tid);
+              //
+              //
+              //                 } else {
+              //                     echo "Error: Statement not prepared: ".mysqli_error($conn);
+              //                 }
+              //
+              //               } else {
+              //
+              //               }
+              //
+              //
+              //             } else {
+              //                 echo "Error: Statement not executed: ".mysqli_error($conn);
+              //             }
+              //           } else {
+              //             echo "Error: Statement not prepared: ".mysqli_error($conn);
+              //           }
+              //
+              //         }
+              //
+              //         // Redirect to user notes page
+              //         header("location: user_notes.php");
+              //       } else {
+              //         echo "Error: Note could not be post".mysqli_error($conn);
+              //       }
+              //
+              //     }
+              //
+              //   }
+              // }
 
             } else{
                 echo "Something went wrong. Please try again later.";
@@ -242,10 +378,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     <div class="wrapper">
         <h2>New Note Page</h2>
         <p>Please fill this form to create an new note</p>
-        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+        <form id="note-form" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
             <div class="form-group <?php echo (!empty($ntext_err)) ? 'has-error' : ''; ?>">
                 <label>Note Text</label>
-                <input type="text" onkeypress="this.style.width = ((this.value.length + 1) * 8) + 'px';" name="ntext" class="form-control" value="<?php echo $ntext; ?>">
+                <input type="text" name="ntext" class="form-control" value="<?php echo $ntext; ?>">
                 <span class="help-block"><?php echo $ntext_err; ?></span>
             </div>
             <div class="form-group <?php echo (!empty($notePrivacy_err)) ? 'has-error' : ''; ?>">
@@ -291,6 +427,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <input type="number" min="1" name="radius" class="form-control" value="<?php echo $radius; ?>">
                 <span class="help-block"><?php echo $radius_err; ?></span>
             </div>
+            <div class="form-group <?php echo (!empty($tag_err)) ? 'has-error' : ''; ?>">
+                <label>Tags (Seperate Multiple Tags by Commas, i.e, "Korean_Food,Shopping,Downtown")</label>
+                <input type="text" name="tags" class="form-control" value="">
+                <span class="help-block"><?php echo $tag_err; ?></span>
+                <!-- <button class="btn btn-primary" onclick="addTagBox()"> Add Another Tag </button> -->
+            </div>
+
             <div class="form-group">
                 <input type="submit" class="btn btn-primary" value="Post Note">
                 <input type="reset" class="btn btn-default" value="Reset">
@@ -298,4 +441,19 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         </form>
     </div>
 </body>
+
+<script>
+
+//function to add new tag boxes to form
+function addTagBox() {
+  var form = document.getElementById("note-form");
+  var formLength = form.childNodes.length;
+
+  var newTag = document.createElement(div);
+
+  form.insertBefore(newTag, form.childNodes[formLength-1]);
+
+}
+
+</script>
 </html>

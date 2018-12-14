@@ -49,7 +49,7 @@ require_once "config.php";
     // $notes = array();
 
     // Prepare a select statement
-    $sql = "SELECT * FROM note WHERE uid = ?";
+    $sql = "SELECT * FROM note NATURAL LEFT OUTER JOIN schedules WHERE uid = ?";
 
     if($stmt = $conn->prepare($sql)){
 
@@ -77,6 +77,11 @@ require_once "config.php";
                       <th>Privacy</th>
                       <th>Latitude</th>
                       <th>Longitude</th>
+                      <th>Active Days</th>
+                      <th>Start Date</th>
+                      <th>End Date</th>
+                      <th>Start Time</th>
+                      <th>End Time</th>
                       <th>Posted</th>
                     </tr>
                   </thead>";
@@ -89,6 +94,11 @@ require_once "config.php";
                     <td>".$row["notePrivacy"]."</td>
                     <td>".$row["latitude"]."</td>
                     <td>".$row["longitude"]."</td>
+                    <td>".$row["activeDays"]."</td>
+                    <td>".$row["startDate"]."</td>
+                    <td>".$row["endDate"]."</td>
+                    <td>".$row["startTime"]."</td>
+                    <td>".$row["endTime"]."</td>
                     <td>".$row["ntimestamp"]."</td>
                   </tr>";
 
@@ -103,6 +113,11 @@ require_once "config.php";
                     <td>".$row["notePrivacy"]."</td>
                     <td>".$row["latitude"]."</td>
                     <td>".$row["longitude"]."</td>
+                    <td>".$row["activeDays"]."</td>
+                    <td>".$row["startDate"]."</td>
+                    <td>".$row["endDate"]."</td>
+                    <td>".$row["startTime"]."</td>
+                    <td>".$row["endTime"]."</td>
                     <td>".$row["ntimestamp"]."</td>
                   </tr>";
           }
