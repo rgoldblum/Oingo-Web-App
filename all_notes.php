@@ -69,35 +69,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
           // Attempt to execute the prepared statement
           if($stmt->execute()){
-            //echo "We did it!";
-              // Store result
-              //$stmt->store_result();
 
-              // Check if username exists, if yes then verify password
-              // if($stmt->num_rows == 1){
-              //     // Bind result variables
-              //     $stmt->bind_result($uid, $username, $hashed_password);
-              //     if($stmt->fetch()){
-              //         if(password_verify($password, $hashed_password)){
-              //             // Password is correct, so start a new session
-              //             session_start();
-              //
-              //             // Store data in session variables
-              //             $_SESSION["loggedin"] = true;
-              //             $_SESSION["uid"] = $uid;
-              //             $_SESSION["username"] = $username;
-              //
-              //             // Redirect user to welcome page
-              //             header("location: mainpage.php");
-              //         } else{
-              //             // Display an error message if password is not valid
-              //             $password_err = "The password you entered was not valid.";
-              //         }
-              //     }
-              } else{
-                  // Display an error message if bad coordinates input
-                  $userlng_err = "Incorrect coordinates input.";
-              }
+          } else {
+              // Display an error message if bad coordinates input
+              $userlng_err = "Incorrect coordinates input.";
+          }
 
 
           } else{
@@ -108,13 +84,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           echo mysqli_error($conn);
       }
 
-      //check if there are any active filters
-      $sql_check_active_filters = "SELECT * FROM users NATURAL JOIN state JOIN filters ON state.sid = filters.sid WHERE users.uid = ? AND state.isActive = 'True'";
+      $sql = "SELECT uid, nid, ntext, notePrivacy, latitude, longitude FROM note";
 
-      if($stmt = $conn->prepare($sql_check_active_filters)) {
-        $stmt->bind_param("i", $param_uid);
-
-        $param_uid = $uid;
+      if($stmt = $conn->prepare($sql)) {
 
         if($stmt->execute()) {
           $result = $stmt->get_result();
@@ -122,198 +94,29 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           //if there are any active filters
           if($result->num_rows > 0) {
 
-            //get viewable notes from with filters
-            // Prepare a select statement
-            $sql = "SELECT DISTINCT note.uid, note.nid, note.ntext, note.notePrivacy, note.latitude, note.longitude
-            FROM users, note NATURAL JOIN schedules
-            WHERE
-            (
-              users.uid = ?
-              AND (getDistance(users.latitude, users.longitude, note.latitude, note.longitude) <= note.radius)
-              AND (withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true')
-              AND ((users.uid = note.uid) OR
-              (note.notePrivacy = 'friends' AND EXISTS (SELECT * FROM Friendship WHERE users.uid = friendship.uid AND note.uid = friendship.friends_uid)) OR (note.notePrivacy = 'public'))
-              AND note.nid IN
-
-              (
-                SELECT DISTINCT note.nid
-                FROM users NATURAL JOIN state, filters NATURAL JOIN schedules, note NATURAL JOIN tag_in_note NATURAL JOIN tag
-                WHERE
-                (
-                  users.uid = ?
-                  AND ((state.isActive = 'True' AND filters.sid = state.sid) OR (users.uid = filters.uid AND filters.sid IS NULL))
-                  AND (((getDistance(users.latitude, users.longitude, filters.latitude, filters.longitude) <= filters.radius))
-                  AND ((withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true'))
-                  AND (tag.tid = filters.tid OR filters.tid IS NULL)
-                  AND ((note.notePrivacy LIKE (filters.filter_privacy))))
-                )
-              )
-            )";
-
-            if($stmt = $conn->prepare($sql)){
-
-              //bind parameters
-              $stmt->bind_param("isssisss", $param_uid, $param_day, $param_date, $param_time, $param_uid2, $param_day2, $param_date2, $param_time2);
-
-              //set parameters
-              $param_uid = $param_uid2 = $uid;
-              $param_day = $param_day2 = $dayOfWeek;
-              $param_date = $param_date2 = $currDate;
-              $param_time = $param_time2 = $currTime;
-
-              // Attempt to execute the prepared statement
-              if($stmt->execute()){
-                //store results
-                $result = $stmt->get_result();
-
-                //iterate through rows
-                while ($row = $result->fetch_assoc()) {
-                  // echo '<p>Row:'.$row.'</p>';
-                  //store row in notes array
-                  $notes[] = $row;
-                }
-
-                // $notes = json_encode($notes);
-                //
-                // echo $notes;
-
-              } else{
-                  echo "Error: Statement not executed: ".mysqli_error($conn);
-              }
-            } else {
-                echo "Error: Statement not prepared: ".mysqli_error($conn);
-            }
-
-          } else {
-
-            //get viewable notes from database without filters
-            // Prepare a select statement
-            $sql = "SELECT DISTINCT note.uid, note.nid, note.ntext, note.notePrivacy, note.latitude, note.longitude
-            FROM users, note NATURAL JOIN schedules
-            WHERE
-            (
-
-              users.uid = ?
-              AND (getDistance(users.latitude, users.longitude, note.latitude, note.longitude) <= note.radius)
-              AND (withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true')
-              AND ((users.uid = note.uid) OR
-              (note.notePrivacy = 'friends' AND EXISTS (SELECT * FROM Friendship WHERE users.uid = friendship.uid AND note.uid = friendship.friends_uid)) OR (note.notePrivacy = 'public'))
-
-            )";
-
-            if($stmt = $conn->prepare($sql)){
-
-              //bind parameters
-              $stmt->bind_param("isss", $param_uid, $param_day, $param_date, $param_time);
-
-              //set parameters
-              $param_uid  = $uid;
-              $param_day = $dayOfWeek;
-              $param_date = $currDate;
-              $param_time = $currTime;
-
-              // Attempt to execute the prepared statement
-              if($stmt->execute()){
-                //store results
-                $result = $stmt->get_result();
-
-                //iterate through rows
-                while ($row = $result->fetch_assoc()) {
-                  // echo '<p>Row:'.$row.'</p>';
-                  //store row in notes array
-                  $notes[] = $row;
-                }
-
-                // $notes = json_encode($notes);
-                //
-                // echo $notes;
-
-              } else{
-                  echo "Error: Statement not executed: ".mysqli_error($conn);
-              }
-            } else {
-                echo "Error: Statement not prepared: ".mysqli_error($conn);
+            //iterate through rows
+            while ($row = $result->fetch_assoc()) {
+              // echo '<p>Row:'.$row.'</p>';
+              //store row in notes array
+              $notes[] = $row;
             }
 
           }
+
         } else {
             echo "Error: Statement not executed: ".mysqli_error($conn);
         }
+
       } else {
           echo "Error: Statement not prepared: ".mysqli_error($conn);
       }
 
+      // // Close connection
+      // $conn->close();
 
-
-      // //get viewable notes from database
-      // // Prepare a select statement
-      // $sql = "SELECT DISTINCT note.uid, note.nid, note.ntext, note.notePrivacy, note.latitude, note.longitude
-      // FROM users, note NATURAL JOIN schedules
-      // WHERE
-      // (
-      //   users.uid = ?
-      //   AND (getDistance(users.latitude, users.longitude, note.latitude, note.longitude) <= note.radius)
-      //   AND (withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true')
-      //   AND ((users.uid = note.uid) OR
-      //   (note.notePrivacy = 'friends' AND EXISTS (SELECT * FROM Friendship WHERE users.uid = friendship.uid AND note.uid = friendship.friends_uid)) OR (note.notePrivacy = 'public'))
-      //   AND note.nid IN
-      //
-      //   (
-      //     SELECT DISTINCT note.nid
-      //     FROM users NATURAL JOIN state, filters NATURAL JOIN schedules, note NATURAL JOIN tag_in_note NATURAL JOIN tag
-      //     WHERE
-      //     (
-      //       users.uid = ?
-      //       AND ((state.isActive = 'True' AND filters.sid = state.sid) OR (users.uid = filters.uid AND filters.sid IS NULL))
-      //       AND (((getDistance(users.latitude, users.longitude, filters.latitude, filters.longitude) <= filters.radius))
-      //       AND ((withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true'))
-      //       AND (tag.tid = filters.tid OR filters.tid IS NULL)
-      //       AND ((note.notePrivacy LIKE (filters.filter_privacy))))
-      //     )
-      //   )
-      // )";
-      //
-      // if($stmt = $conn->prepare($sql)){
-      //
-      //   //bind parameters
-      //   $stmt->bind_param("isssisss", $param_uid, $param_day, $param_date, $param_time, $param_uid2, $param_day2, $param_date2, $param_time2);
-      //
-      //   //set parameters
-      //   $param_uid = $param_uid2 = $uid;
-      //   $param_day = $param_day2 = $dayOfWeek;
-      //   $param_date = $param_date2 = $currDate;
-      //   $param_time = $param_time2 = $currTime;
-      //
-      //   // Attempt to execute the prepared statement
-      //   if($stmt->execute()){
-      //     //store results
-      //     $result = $stmt->get_result();
-      //
-      //     //iterate through rows
-      //     while ($row = $result->fetch_assoc()) {
-      //       // echo '<p>Row:'.$row.'</p>';
-      //       //store row in notes array
-      //       $notes[] = $row;
-      //     }
-      //
-      //     // $notes = json_encode($notes);
-      //     //
-      //     // echo $notes;
-      //
-      //   } else{
-      //       echo "Error: Statement not executed: ".mysqli_error($conn);
-      //   }
-      // } else {
-      //     echo "Error: Statement not prepared: ".mysqli_error($conn);
-      // }
-
-
-  }
-
-  // Close connection
-  $conn->close();
-
+}
 ?>
+
 
 <!DOCTYPE html>
 <html>
@@ -373,21 +176,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           <a class="navbar-brand" href="mainpage.php">Oingo</a>
         </div>
         <ul class="nav navbar-nav">
-          <li class="active"><a href="mainpage.php">Home</a></li>
+          <li><a href="mainpage.php">Home</a></li>
           <li><a href="user_notes.php">My Notes</a></li>
           <li><a href="user_filters.php">My Filters</a></li>
           <li><a href="user_states.php">My States</a></li>
           <li><a href="user_friends.php">My Friends</a></li>
-          <!-- <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="#">Page 1-1</a></li>
-              <li><a href="#">Page 1-2</a></li>
-              <li><a href="#">Page 1-3</a></li>
-            </ul>
-          </li> -->
         </ul>
         <ul class="nav navbar-nav navbar-right">
-          <li><a href="all_notes.php">All Notes</a></li>
+          <li class="active"><a href="all_notes.php">All Notes</a></li>
           <li><a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
         </ul>
       </div>

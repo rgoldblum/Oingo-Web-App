@@ -143,6 +143,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["sender_uid"])) {
           <li class="active"><a href="user_friends.php">My Friends</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
+          <li><a href="all_notes.php">All Notes</a></li>
           <li><a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
         </ul>
       </div>

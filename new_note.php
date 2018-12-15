@@ -22,6 +22,8 @@ $currTime = date("Y-m-d G:i:s", time());
 
 
 
+
+
 // Define variables and initialize with empty values
 $ntext = $notePrivacy = $activeDays =  $startDate = $endDate = $startTime = $endTime = $radius = $sched_id = "";
 $tag = array();
@@ -73,7 +75,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     // Validate activeDays
     if(empty(trim($activeDays))){
         $activeDays_err = "Please select day(s) you want this note to be active.";
-    } else{
     }
 
     // Validate startDate
@@ -423,12 +424,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <span class="help-block"><?php echo $endTime_err; ?></span>
             </div>
             <div class="form-group <?php echo (!empty($radius_err)) ? 'has-error' : ''; ?>">
-                <label>Radius of Interest</label>
+                <label>Radius of Interest (Kilometers)</label>
                 <input type="number" min="1" name="radius" class="form-control" value="<?php echo $radius; ?>">
                 <span class="help-block"><?php echo $radius_err; ?></span>
             </div>
             <div class="form-group <?php echo (!empty($tag_err)) ? 'has-error' : ''; ?>">
-                <label>Tags (Seperate Multiple Tags by Commas, i.e, "Korean_Food,Shopping,Downtown")</label>
+                <label>Tags (Seperate Multiple Tags by Commas, i.e, "Korean_Food, Shopping, Downtown")</label>
                 <input type="text" name="tags" class="form-control" value="">
                 <span class="help-block"><?php echo $tag_err; ?></span>
                 <!-- <button class="btn btn-primary" onclick="addTagBox()"> Add Another Tag </button> -->

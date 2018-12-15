@@ -34,6 +34,7 @@ require_once "config.php";
           <li><a href="user_friends.php">My Friends</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
+          <li><a href="all_notes.php">All Notes</a></li>
           <li><a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
         </ul>
       </div>
@@ -49,7 +50,7 @@ require_once "config.php";
     // $notes = array();
 
     // Prepare a select statement
-    $sql = "SELECT * FROM note NATURAL LEFT OUTER JOIN schedules WHERE uid = ?";
+    $sql = "SELECT * FROM note NATURAL LEFT OUTER JOIN schedules WHERE uid = ? ORDER BY ntimestamp";
 
     if($stmt = $conn->prepare($sql)){
 
@@ -77,7 +78,7 @@ require_once "config.php";
                       <th>Privacy</th>
                       <th>Latitude</th>
                       <th>Longitude</th>
-                      <th>Radius of Interest</th>
+                      <th>Radius of Interest (km)</th>
                       <th>Active Days</th>
                       <th>Start Date</th>
                       <th>End Date</th>

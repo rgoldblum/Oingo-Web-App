@@ -33,6 +33,7 @@ require_once "config.php";
           <li><a href="user_friends.php">My Friends</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
+          <li><a href="all_notes.php">All Notes</a></li>
           <li><a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
         </ul>
       </div>
@@ -74,6 +75,7 @@ require_once "config.php";
                         <th>Privacy</th>
                         <th>Latitude</th>
                         <th>Longitude</th>
+                        <th>Radius of Interest (km)</th>
                         <th>Active Days</th>
                         <th>Start Date</th>
                         <th>End Date</th>
@@ -93,6 +95,7 @@ require_once "config.php";
                       <td>".$row["filter_privacy"]."</td>
                       <td>".$row["latitude"]."</td>
                       <td>".$row["longitude"]."</td>
+                      <td>".$row["radius"]."</td>
                       <td>".$row["activeDays"]."</td>
                       <td>".$row["startDate"]."</td>
                       <td>".$row["endDate"]."</td>
@@ -113,6 +116,7 @@ require_once "config.php";
                       <td>".$row["filter_privacy"]."</td>
                       <td>".$row["latitude"]."</td>
                       <td>".$row["longitude"]."</td>
+                      <td>".$row["radius"]."</td>
                       <td>".$row["activeDays"]."</td>
                       <td>".$row["startDate"]."</td>
                       <td>".$row["endDate"]."</td>

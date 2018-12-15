@@ -50,12 +50,29 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         }
     }
 
-    // Validate filter_privacy
-    if(empty(trim($_POST["filter_privacy"]))){
-        $filter_privacy_err = "Please pick a privacy setting for your filter.";
-    } else{
-        $filter_privacy = trim($_POST["filter_privacy"]);
+    //concatenate filter privacy
+    if(isset($_POST["self"])) {
+      $filter_privacy .= $_POST["self"]." ";
     }
+    if(isset($_POST["friends"])) {
+      $filter_privacy .= $_POST["friends"]." ";
+    }
+    if(isset($_POST["public"])) {
+      $filter_privacy .= $_POST["public"]." ";
+    }
+
+    //add commas to seperate privacies
+    $filter_privacy = implode(", ", preg_split("/[\s]+/", $filter_privacy));
+    $filter_privacy = substr_replace($filter_privacy,"",-2);
+
+    // Validate filter_privacy
+    if(empty(trim($filter_privacy))){
+        //$filter_privacy_err = "Please pick a privacy setting for your filter.";
+        $filter_privacy = "self, friends, public";
+    }
+    //else{
+    //     $filter_privacy = trim($_POST["filter_privacy"]);
+    // }
 
     //concatenate active days
     if(isset($_POST["Mon"])) {
@@ -86,21 +103,36 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate activeDays
     if(empty(trim($activeDays))){
-        $activeDays_err = "Please select day(s) you want this note to be active.";
-    } else{
-
+        //$activeDays_err = "Please select day(s) you want this note to be active.";
+        $activeDays = "Mon, Tue, Wed, Thu, Fri, Sat, Sun";
     }
+
+    // // Validate startDate
+    // if(empty(trim($_POST["startDate"]))){
+    //     $startDate_err = "Please enter a start date.";
+    // } else{
+    //     $startDate = trim($_POST["startDate"]);
+    // }
+    //
+    // // Validate endDate
+    // if(empty(trim($_POST["endDate"]))){
+    //     $endDate_err = "Please enter a end date.";
+    // } else{
+    //     $endDate = trim($_POST["endDate"]);
+    // }
 
     // Validate startDate
     if(empty(trim($_POST["startDate"]))){
-        $startDate_err = "Please enter a start date.";
+        //$startDate_err = "Please enter a start date.";
+        $startDate = date("Y-m-d", time());
     } else{
         $startDate = trim($_POST["startDate"]);
     }
 
     // Validate endDate
     if(empty(trim($_POST["endDate"]))){
-        $endDate_err = "Please enter a end date.";
+        //$endDate_err = "Please enter a end date.";
+        $endDate = date("Y-m-d", mktime(0,0,0,1,1,2999));
     } else{
         $endDate = trim($_POST["endDate"]);
     }
@@ -112,14 +144,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate startTime
     if(empty(trim($_POST["startTime"]))){
-        $startTime_err = "Please enter a time of day to start showing the note.";
+        //$startTime_err = "Please enter a time of day to start showing the note.";
+        $startTime = "00:00";
     } else{
         $startTime = trim($_POST["startTime"]);
     }
 
     // Validate endTime
     if(empty(trim($_POST["endTime"]))){
-        $endTime_err = "Please enter a time of day to stop showing the note.";
+        //$endTime_err = "Please enter a time of day to stop showing the note.";
+        $endTime = "24:00";
     } else{
         $endTime = trim($_POST["endTime"]);
     }
@@ -131,7 +165,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate radius
     if(empty(trim($_POST["radius"]))){
-        $radius_err = "Please enter a radius of how far from the notes location you want it to be displayed.";
+        //$radius_err = "Please enter a radius of how far from the notes location you want it to be displayed.";
+        $radius = PHP_FLOAT_MAX;
     } else{
         $radius = trim($_POST["radius"]);
     }
@@ -323,9 +358,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             </div>
             <div class="form-group <?php echo (!empty($filter_privacy_err)) ? 'has-error' : ''; ?>">
                 <label>Privacy</label><br>
-                <input type="radio" name="filter_privacy" class="form-control" value="self"> Visible to Me Only
-                <input type="radio" name="filter_privacy" class="form-control" value="friends"> Visible to my friends and me only
-                <input type="radio" name="filter_privacy" class="form-control" value="public">Visible to anyone (Public)
+                <input type="checkbox" name="self" value="self">Visible to Me Only (Self)<br>
+                <input type="checkbox" name="friends" value="friends">Visible to my friends and me only (Friends)<br>
+                <input type="checkbox" name="public" value="public">Visible to anyone (Public)<br>
                 <span class="help-block"><?php echo $filter_privacy_err; ?></span>
             </div>
             <div class="form-group <?php echo (!empty($activeDays_err)) ? 'has-error' : ''; ?>">
@@ -360,7 +395,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <span class="help-block"><?php echo $endTime_err; ?></span>
             </div>
             <div class="form-group <?php echo (!empty($radius_err)) ? 'has-error' : ''; ?>">
-                <label>Radius of Interest</label>
+                <label>Radius of Interest (Kilometers)</label>
                 <input type="number" min="1" name="radius" class="form-control" value="<?php echo $radius; ?>">
                 <span class="help-block"><?php echo $radius_err; ?></span>
             </div>

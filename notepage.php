@@ -92,7 +92,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         // echo $nid;
       }
 
-      $sql = "SELECT * FROM note JOIN users ON note.uid WHERE nid = ?";
+      $sql = "SELECT * FROM note JOIN users ON note.uid  = users.uid WHERE nid = ?";
 
       //prepate statement
       if($stmt = $conn->prepare($sql)) {
@@ -110,6 +110,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           if($result->num_rows > 0) {
 
             $note = $result->fetch_assoc();
+
+            // foreach($note as $field) {
+            //   echo "(".htmlspecialchars($field).")";
+            // }
 
             echo "<div>
                   <h2> ".$note["ntext"]."</h2>
