@@ -69,31 +69,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
           // Attempt to execute the prepared statement
           if($stmt->execute()){
-            //echo "We did it!";
-              // Store result
-              //$stmt->store_result();
 
-              // Check if username exists, if yes then verify password
-              // if($stmt->num_rows == 1){
-              //     // Bind result variables
-              //     $stmt->bind_result($uid, $username, $hashed_password);
-              //     if($stmt->fetch()){
-              //         if(password_verify($password, $hashed_password)){
-              //             // Password is correct, so start a new session
-              //             session_start();
-              //
-              //             // Store data in session variables
-              //             $_SESSION["loggedin"] = true;
-              //             $_SESSION["uid"] = $uid;
-              //             $_SESSION["username"] = $username;
-              //
-              //             // Redirect user to welcome page
-              //             header("location: mainpage.php");
-              //         } else{
-              //             // Display an error message if password is not valid
-              //             $password_err = "The password you entered was not valid.";
-              //         }
-              //     }
               } else{
                   // Display an error message if bad coordinates input
                   $userlng_err = "Incorrect coordinates input.";
@@ -142,10 +118,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 (
                   users.uid = ?
                   AND ((state.isActive = 'True' AND filters.sid = state.sid) OR (users.uid = filters.uid AND filters.sid IS NULL))
-                  AND (((getDistance(users.latitude, users.longitude, filters.latitude, filters.longitude) <= filters.radius))
-                  AND ((withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true'))
+                  AND ((getDistance(users.latitude, users.longitude, filters.latitude, filters.longitude) <= filters.radius)
+                  AND (withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true')
                   AND (tag.tid = filters.tid OR filters.tid IS NULL)
-                  AND ((note.notePrivacy LIKE (filters.filter_privacy))))
+                  AND (filters.filter_privacy LIKE CONCAT('%', note.notePrivacy, '%')))
                 )
               )
             )";
@@ -245,73 +221,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
 
 
-      // //get viewable notes from database
-      // // Prepare a select statement
-      // $sql = "SELECT DISTINCT note.uid, note.nid, note.ntext, note.notePrivacy, note.latitude, note.longitude
-      // FROM users, note NATURAL JOIN schedules
-      // WHERE
-      // (
-      //   users.uid = ?
-      //   AND (getDistance(users.latitude, users.longitude, note.latitude, note.longitude) <= note.radius)
-      //   AND (withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true')
-      //   AND ((users.uid = note.uid) OR
-      //   (note.notePrivacy = 'friends' AND EXISTS (SELECT * FROM Friendship WHERE users.uid = friendship.uid AND note.uid = friendship.friends_uid)) OR (note.notePrivacy = 'public'))
-      //   AND note.nid IN
-      //
-      //   (
-      //     SELECT DISTINCT note.nid
-      //     FROM users NATURAL JOIN state, filters NATURAL JOIN schedules, note NATURAL JOIN tag_in_note NATURAL JOIN tag
-      //     WHERE
-      //     (
-      //       users.uid = ?
-      //       AND ((state.isActive = 'True' AND filters.sid = state.sid) OR (users.uid = filters.uid AND filters.sid IS NULL))
-      //       AND (((getDistance(users.latitude, users.longitude, filters.latitude, filters.longitude) <= filters.radius))
-      //       AND ((withinSchedule(?, ?, ?, schedules.activeDays, schedules.startDate, schedules.endDate, schedules.startTime, schedules.endTime) = 'true'))
-      //       AND (tag.tid = filters.tid OR filters.tid IS NULL)
-      //       AND ((note.notePrivacy LIKE (filters.filter_privacy))))
-      //     )
-      //   )
-      // )";
-      //
-      // if($stmt = $conn->prepare($sql)){
-      //
-      //   //bind parameters
-      //   $stmt->bind_param("isssisss", $param_uid, $param_day, $param_date, $param_time, $param_uid2, $param_day2, $param_date2, $param_time2);
-      //
-      //   //set parameters
-      //   $param_uid = $param_uid2 = $uid;
-      //   $param_day = $param_day2 = $dayOfWeek;
-      //   $param_date = $param_date2 = $currDate;
-      //   $param_time = $param_time2 = $currTime;
-      //
-      //   // Attempt to execute the prepared statement
-      //   if($stmt->execute()){
-      //     //store results
-      //     $result = $stmt->get_result();
-      //
-      //     //iterate through rows
-      //     while ($row = $result->fetch_assoc()) {
-      //       // echo '<p>Row:'.$row.'</p>';
-      //       //store row in notes array
-      //       $notes[] = $row;
-      //     }
-      //
-      //     // $notes = json_encode($notes);
-      //     //
-      //     // echo $notes;
-      //
-      //   } else{
-      //       echo "Error: Statement not executed: ".mysqli_error($conn);
-      //   }
-      // } else {
-      //     echo "Error: Statement not prepared: ".mysqli_error($conn);
-      // }
-
-
   }
 
-  // Close connection
-  $conn->close();
 
 ?>
 
@@ -625,78 +536,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         addNoteMarkers(notes);
 
 
-
-
-        //
-        // //add notes from json Array
-        // for(var i=0; i<notes.length; i++) {
-        //   // marker
-        //   var position = {lat: Number(notes[i].latitude), lng: Number(notes[i].longitude)};
-        //   var marker = new google.maps.Marker({
-        //     position: position,
-        //     title: ''+notes[i].nid,
-        //     map: map
-        //   });
-        //
-        //   var content = document.createElement('div');
-        //   var strong = document.createElement('strong');
-        //   strong.textContent = notes[i].ntext;
-        //   content.appendChild(strong);
-        //
-        //
-        //
-        //   // // infowindow
-        //   // var infowindow = new google.maps.InfoWindow({
-        //   //   content: '<a href="notepage.php">'+notes[i].ntext+'</a>',
-        //   //   map: map,
-        //   //   position: position
-        //   // });
-        //
-        //   marker.addListener('click', function() {
-        //     infowindow.setContent(content);
-        //     infowindow.open(map, marker);
-        //   });
-
-
-          //add event listener to open note info on click
-          // marker.addListener('click', function() {
-          //   noteInfo.open(map, marker);
-          // });
-
-
-      //  }
-
-        //add note markers
-      //   downloadUrl('fetch_nodes.php', function(data) {
-      //     var xml = data.responseXML;
-      //     var markers = xml.documentElement.getElementsByTagName('marker');
-      //     Array.prototype.forEach.call(markers, function(markerElem) {
-      //       var id = markerElem.getAttribute('nid');
-      //       //var name = markerElem.getAttribute('name');
-      //       //var address = markerElem.getAttribute('addresss');
-      //       //var type = markerElem.getAttribute('type');
-      //       var point =  google.maps.LatLng(
-      //         parseFloat(markerElem.getAttribute('lat')),
-      //         parseFloat(markerElem.getAttribute('lng')));
-      //
-      //       // var infowincontent = document.createElement('div');
-      //       // var strong = document.createElement('strong');
-      //       // strong.textContent = name
-      //       // infowincontent.appendChild(strong);
-      //       // infowincontent.appendChild(document.createElement('br'));
-      //
-      //       // var text = document.createElement('text');
-      //       // text.textContent = address
-      //       // infowincontent.appendChild(text);
-      //       // var icon = customLabel[type] || {};
-      //       var marker = new google.maps.Marker({
-      //         map: map,
-      //         position: point,
-      //         //label: icon.label
-      //     });
-      //   });
-      // });
-
         //add legend
         var legend = document.getElementById('legend');
 
@@ -712,14 +551,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         publicDiv.innerHTML = '<img src="images/sticky-note-red-small.png">Public Note';
         legend.appendChild(publicDiv);
 
-        // for (var key in icons) {
-        //   var type = icons[key];
-        //   var name = type.name;
-        //   var icon = type.icon;
-        //   var div = document.createElement('div');
-        //   div.innerHTML = '<img src="' + icon + '"> ' + name;
-        //   legend.appendChild(div);
-        // }
 
         map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
 
@@ -730,4 +561,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     </script>
   </body>
 
+  <?php
+  // Close connection
+  $conn->close();
+  ?>
 </html>

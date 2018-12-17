@@ -22,8 +22,8 @@ date_default_timezone_set("America/New_York");
 
 //get current time
 $currDate = date("Y-m-d", time());
-
-$dayOfWeek = date("D", time());
+//
+// $dayOfWeek = date("D", time());
 //
 // echo $currDate." ".$dayOfWeek;
 
@@ -43,16 +43,16 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       $userlng = trim($_POST["userlng"]);
   }
 
-  // Check if current time is empty
-  if(empty(trim($_POST["currTime"]))){
-      $currTime_err = "Please enter a time.";
-  } else{
-      $currTime = trim($_POST["currTime"]);
-    //  echo $currTime;
-  }
+  // // Check if current time is empty
+  // if(empty(trim($_POST["currTime"]))){
+  //     $currTime_err = "Please enter a time.";
+  // } else{
+  //     $currTime = trim($_POST["currTime"]);
+  //   //  echo $currTime;
+  // }
 
   // Validate credentials
-  if(empty($userlat_err) && empty($userlng_err) && empty($currTime_err)){
+  if(empty($userlat_err) && empty($userlng_err)){
       // Prepare a select statement
       $sql = "UPDATE users SET latitude = ?, longitude = ? WHERE uid = ?";
 
@@ -70,6 +70,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           // Attempt to execute the prepared statement
           if($stmt->execute()){
 
+            // Redirect to user notes page
+            header("location: all_notes.php");
+
           } else {
               // Display an error message if bad coordinates input
               $userlng_err = "Incorrect coordinates input.";
@@ -84,37 +87,40 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           echo mysqli_error($conn);
       }
 
-      $sql = "SELECT uid, nid, ntext, notePrivacy, latitude, longitude FROM note";
 
-      if($stmt = $conn->prepare($sql)) {
-
-        if($stmt->execute()) {
-          $result = $stmt->get_result();
-
-          //if there are any active filters
-          if($result->num_rows > 0) {
-
-            //iterate through rows
-            while ($row = $result->fetch_assoc()) {
-              // echo '<p>Row:'.$row.'</p>';
-              //store row in notes array
-              $notes[] = $row;
-            }
-
-          }
-
-        } else {
-            echo "Error: Statement not executed: ".mysqli_error($conn);
-        }
-
-      } else {
-          echo "Error: Statement not prepared: ".mysqli_error($conn);
-      }
 
       // // Close connection
       // $conn->close();
 
 }
+
+$sql = "SELECT uid, nid, ntext, notePrivacy, latitude, longitude FROM note";
+
+if($stmt = $conn->prepare($sql)) {
+
+  if($stmt->execute()) {
+    $result = $stmt->get_result();
+
+    //if there are any active filters
+    if($result->num_rows > 0) {
+
+      //iterate through rows
+      while ($row = $result->fetch_assoc()) {
+        // echo '<p>Row:'.$row.'</p>';
+        //store row in notes array
+        $notes[] = $row;
+      }
+
+    }
+
+  } else {
+      echo "Error: Statement not executed: ".mysqli_error($conn);
+  }
+
+} else {
+    echo "Error: Statement not prepared: ".mysqli_error($conn);
+}
+
 ?>
 
 
@@ -204,11 +210,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                   <label>Current Longitude</label>
                   <input type="number" step = "any" name="userlng" class="form-control" value="<?php echo $userlng; ?>">
                   <span class="help-block"><?php echo $userlng_err; ?></span>
-              </div>
-              <div class="form-group <?php echo (!empty($currTime_err)) ? 'has-error' : ''; ?>">
-                  <label>Current Time</label>
-                  <input type="time" name="currTime" class="form-control" value="<?php echo $currTime; ?>">
-                  <span class="help-block"><?php echo $currTime_err; ?></span>
               </div>
               <div class="form-group">
                   <input type="submit" class="btn btn-primary" value="Update Current Location and Time">

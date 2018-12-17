@@ -223,7 +223,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 // Attempt to execute the note insert statement
                 if($stmt->execute()){
-                  // Redirect to user notes page
+                  // Redirect to user filters page
                   header("location: user_filters.php");
                 } else {
                   echo "Error: Statement could note be executed:".mysqli_error($conn);
