@@ -8,21 +8,11 @@ require_once "config.php";
 //Inlude fetch user data
 require_once "fetch_user_data.php";
 
-  // echo $userlat;
-  // echo $userlng;
-
-
 //Set to eastern time zone
 date_default_timezone_set("America/New_York");
 
 //get current time
 $currTime = date("Y-m-d G:i:s", time());
-//echo $currTime;
-
-
-
-
-
 
 // Define variables and initialize with empty values
 $ntext = $notePrivacy = $activeDays =  $startDate = $endDate = $startTime = $endTime = $radius = $sched_id = "";
@@ -31,9 +21,6 @@ $ntext_err = $notePrivacy_err = $activeDays_err =  $startDate_err = $endDate_err
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
-
-  // echo $_POST["startTime"];
-  // echo $_POST["endTime"];
 
     // Validate ntext
     if(empty(trim($_POST["ntext"]))){
@@ -126,9 +113,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         // Prepare an schedule insert statement
         $sql_sched = "INSERT INTO schedules (activeDays, startDate, endDate, startTime, endTime) VALUES (?, ?, ?, ?, ?)";
-
-        //statement to get last inserted sched_id
-        $sql_get_sched = "SELECT sched_id FROM schedules ORDER BY sched_id DESC LIMIT 1";
 
         // Prepare an note insert statement
         $sql_note = "INSERT INTO note (uid, ntext, notePrivacy, ntimestamp, sched_id, radius, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";

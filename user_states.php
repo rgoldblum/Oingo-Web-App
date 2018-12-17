@@ -12,7 +12,6 @@ $sname_err = "";
 if($_SERVER["REQUEST_METHOD"] == "POST"){
   if(isset($_POST["new_active_sid"])) {
     $new_active_sid = $_POST["new_active_sid"];
-    //echo $new_active_sid;
 
     //prepare sql statements
     $sql_old_active = "UPDATE state SET isActive = ? WHERE uid = ? AND isActive = ? ";
@@ -59,6 +58,36 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     } else {
         echo "Error: Statemet was not prepared: ".mysqli_error($conn);
     }
+
+  } else if(isset($_POST["deactivate_sid"])) {
+
+    $deactivate_sid = $_POST["deactivate_sid"];
+
+    //prepare sql statements
+    $sql_old_active = "UPDATE state SET isActive = ? WHERE uid = ? AND sid = ? ";
+
+    if($stmt = $conn->prepare($sql_old_active)) {
+      //bind params
+      $stmt->bind_param("sii", $param_new_isActive, $param_uid, $param_deactivate_sid);
+
+      //set params
+      $param_new_isActive = "False";
+      $param_uid = $uid;
+      $param_deactivate_sid = $deactivate_sid;
+
+      //execute statement
+      if($stmt->execute()) {
+        // Redirect back to page to clear post request
+        header("location: user_states.php");
+
+      } else {
+          echo "Error: Statemet was not executed: ".mysqli_error($conn);
+      }
+
+    } else {
+        echo "Error: Statemet was not prepared: ".mysqli_error($conn);
+    }
+
 
   } else {
 
@@ -181,7 +210,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
               echo "<form action='".htmlspecialchars($_SERVER["PHP_SELF"])."' method='post'>
                       <input type = 'hidden'  name = 'new_active_sid' value = '".$row["sid"]."'>
                       <div class='form-group'>
-                          <input type='submit' class='btn btn-primary' value='Make Active'>
+                          <input type='submit' class='btn btn-primary' value='Activate'>
+                      </div>
+                    </form>";
+            } else {
+
+              echo "<form action='".htmlspecialchars($_SERVER["PHP_SELF"])."' method='post'>
+                      <input type = 'hidden'  name = 'deactivate_sid' value = '".$row["sid"]."'>
+                      <div class='form-group'>
+                          <input type='submit' class='btn btn-primary' value='Deactivate'>
                       </div>
                     </form>";
             }
@@ -203,7 +240,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 echo "<form action='".htmlspecialchars($_SERVER["PHP_SELF"])."' method='post'>
                         <input type = 'hidden'  name = 'new_active_sid' value = '".$row["sid"]."'>
                         <div class='form-group'>
-                            <input type='submit' class='btn btn-primary' value='Make Active'>
+                            <input type='submit' class='btn btn-primary' value='Activate'>
+                        </div>
+                      </form>";
+              } else {
+
+                echo "<form action='".htmlspecialchars($_SERVER["PHP_SELF"])."' method='post'>
+                        <input type = 'hidden'  name = 'deactivate_sid' value = '".$row["sid"]."'>
+                        <div class='form-group'>
+                            <input type='submit' class='btn btn-primary' value='Deactivate'>
                         </div>
                       </form>";
               }
@@ -217,10 +262,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           } else {
               echo "You have not made any stats";
           }
-
-          //echo "</br></br><a href='new_filter.php' class='btn btn-primary'>Create a New State</a>";
-
-
 
         } else{
             echo "Error: Statement did not execute".mysqli_error($conn);

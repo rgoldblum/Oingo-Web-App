@@ -24,8 +24,6 @@ date_default_timezone_set("America/New_York");
 $currDate = date("Y-m-d", time());
 
 $dayOfWeek = date("D", time());
-//
-// echo $currDate." ".$dayOfWeek;
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -48,7 +46,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       $currTime_err = "Please enter a time.";
   } else{
       $currTime = trim($_POST["currTime"]);
-    //  echo $currTime;
   }
 
   // Validate credentials
@@ -59,8 +56,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       if($stmt = $conn->prepare($sql)){
           // Bind variables to the prepared statement as parameters
           $stmt->bind_param("ddi", $param_userlat, $param_userlng, $param_uid);
-
-          //echo $uid;
 
           // Set parameters
           $param_userlat = $userlat;
@@ -144,14 +139,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 //iterate through rows
                 while ($row = $result->fetch_assoc()) {
-                  // echo '<p>Row:'.$row.'</p>';
                   //store row in notes array
                   $notes[] = $row;
                 }
-
-                // $notes = json_encode($notes);
-                //
-                // echo $notes;
 
               } else{
                   echo "Error: Statement not executed: ".mysqli_error($conn);
@@ -195,14 +185,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 //iterate through rows
                 while ($row = $result->fetch_assoc()) {
-                  // echo '<p>Row:'.$row.'</p>';
                   //store row in notes array
                   $notes[] = $row;
                 }
-
-                // $notes = json_encode($notes);
-                //
-                // echo $notes;
 
               } else{
                   echo "Error: Statement not executed: ".mysqli_error($conn);
@@ -219,8 +204,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           echo "Error: Statement not prepared: ".mysqli_error($conn);
       }
 
-
-
   }
 
 
@@ -235,11 +218,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.css">
     <style type="text/css">
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
-       /* .location-container{
-         align: left;
-       } */
 
       .map-container {
         width: 600px;
@@ -268,13 +246,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         vertical-align: middle;
       }
 
-      /* Optional: Makes the sample page fill the window. */
-      /* html, body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      } */
-
     </style>
   </head>
   <body>
@@ -289,13 +260,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           <li><a href="user_filters.php">My Filters</a></li>
           <li><a href="user_states.php">My States</a></li>
           <li><a href="user_friends.php">My Friends</a></li>
-          <!-- <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="#">Page 1-1</a></li>
-              <li><a href="#">Page 1-2</a></li>
-              <li><a href="#">Page 1-3</a></li>
-            </ul>
-          </li> -->
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <li><a href="all_notes.php">All Notes</a></li>
@@ -308,7 +272,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       <div class="col-md-6">
         <div class="location-container">
           <center><h1> Current Location</h1></center>
-          <?php //echo 'Latitude: '.$userlat.', Longitude: '.$userlng;?>
           <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
               <div class="form-group <?php echo (!empty($userlat_err)) ? 'has-error' : ''; ?>">
                   <label>Current Latitude</label>
@@ -340,13 +303,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
        </div>
     </div>
 
-    <!-- <center>
-
-    </center> -->
-
-  <!-- <div class="location-container">
-    <h3> Current Location</h3>
-  </div> -->
     <script>
       var map;
       var userLat;
@@ -364,49 +320,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
       <?php echo 'var notes = '.json_encode($notes).';';?>
 
       console.log(notes);
-
-      // for(i = 0; i<notes.length; i++) {
-      //   console.log(notes[i]);
-      // }
-      // var  = document.getElementById("demo");
-
-      // function getLocation() {
-      //   if (navigator.geolocation) {
-      //       navigator.geolocation.getCurrentPosition();
-      //       lat = position.coords.latitude;
-      //       long = position.coords.longitude;
-      //   } else {
-      //         console.log("Geolocation is not supported by this browser.");
-      //   }
-      // }
-
-      // function showPosition(position) {
-      //   x.innerHTML="Latitude: " + position.coords.latitude +
-      //   "<br>Longitude: " + position.coords.longitude;
-      // }
-
-      // function getPosition() {
-      //   if (navigator.geolocation) {
-      //     navigator.geolocation.watchPosition(showPosition);
-      //   } else {
-      //     console.log("Geolocation is not supported by this browser.");
-      //   }
-      // }
-
-      // function setUserLocation(position) {
-      //   userLat = position.coords.latitude;
-      //   userLong = position.coords.longitude;
-      // }
-
-      //function to update current hour text
-      function updateHour(value) {
-        document.getElementById('currentHour').innerHTML = "Current Hour: " + value;
-      }
-
-      //function to update current minute text
-      function updateMin(value) {
-        document.getElementById('currentMin').innerHTML = "Current Minute: " + value;
-      }
 
       //function to add note markers to map
       function addNoteMarkers(notes) {
@@ -447,14 +360,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         });
       }
 
-
       function initMap() {
       //  position = navigator.geolocation.getCurrentPosition(setUserLocation);
-
         map = new google.maps.Map(document.getElementById('map'), {
-          //make center user's current location
-          //center: {lat: -34.397, lng: 150.644},
-          // center: {lat: , lng: +userLong},
           zoom: 11,
           disableDefaultUI: true
         });
@@ -469,72 +377,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         map.setCenter(userLocation);
 
-
-
-        // if (navigator.geolocation) {
-        //   navigator.geolocation.getCurrentPosition(function (position) {
-        //     userLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-        //     map.setCenter(userLocation);
-        //
-        //     //add marker for users location
-        //     var userMarker = new google.maps.Marker({
-        //       position: userLocation,
-        //       map: map,
-        //       icon: 'images/blue-dot.png'
-        //     });
-        //   });
-        // }
-
-      //  map.setCenter({lat: userLat, lng: userLong});
-
-
-        // var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
-        // var image = {
-        //   url: 'images/sticky-note-blue.png',
-        //   size: new google.maps.Size(20, 32),
-        //   origin: new google.maps.Point(0, 0),
-        //   anchor: new google.maps.Point(0, 32)
-        //
-        // };
-
-
-        //add markers for viewable notes
-        var notePosition = {lat: -34.401, lng: 150.652};
-        var noteMarker = new google.maps.Marker({
-          position: notePosition,
-          map: map,
-          icon: 'images/sticky-note-blue-small.png'
-        });
-        var noteText = 'This is the note text!';
-        var noteInfo = new google.maps.InfoWindow({
-          //content: noteText
-        });
-
-        noteMarker.addListener('click', function() {
-          noteInfo.setContent('Note 1 Text!');
-          noteInfo.open(map, noteMarker);
-        });
-
-        //add note 2 for testing
-        var note2Position = {lat: -34.501, lng: 150.752};
-        var note2Marker = new google.maps.Marker({
-          position: note2Position,
-          map: map,
-          icon: 'images/sticky-note-red-small.png'
-        });
-        //var note2Text = 'This is the note 2 text!';
-        // var note2Info = new google.maps.InfoWindow({
-        //   content: note2Text
-        // });
-
-        note2Marker.addListener('click', function() {
-          noteInfo.setContent('<a href="notepage.php">Note 2 Text!</a>');
-          noteInfo.open(map, note2Marker);
-        });
-
         //call add notes function
         addNoteMarkers(notes);
-
 
         //add legend
         var legend = document.getElementById('legend');
@@ -565,4 +409,5 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
   // Close connection
   $conn->close();
   ?>
+
 </html>

@@ -1,19 +1,3 @@
-<!-- <!DOCTYPE html>
-<html>
-  <body>
-
-    <h1>Login to Oingo!</h1>
-
-    <form action="mainpage.php" method="post">
-      Username: <input type="text" name="username" required>
-      Password: <input type="password" name="password" required>
-      <input type="submit" value="Login">
-    </form>
-
-  </body>
-</html> -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

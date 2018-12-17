@@ -4,6 +4,7 @@ require_once "check_login.php";
 
 // Include config file
 require_once "config.php";
+
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +46,7 @@ require_once "config.php";
       //fetch filters written by user
 
       // Prepare a select statement
-      $sql = "SELECT * FROM filters NATURAL LEFT OUTER JOIN tag NATURAL LEFT OUTER JOIN state NATURAL LEFT OUTER JOIN schedules WHERE uid = ?";
+      $sql = "SELECT * FROM filters NATURAL LEFT OUTER JOIN tag NATURAL LEFT OUTER JOIN state NATURAL LEFT OUTER JOIN schedules WHERE uid = ? ORDER BY fid";
 
       if($stmt = $conn->prepare($sql)){
 

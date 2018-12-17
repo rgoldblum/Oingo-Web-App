@@ -243,8 +243,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["sender_uid"])) {
             //output first note
             $row = $result->fetch_assoc();
 
+            //<h1> Friend Requests Sent</h1>
             //start table
-            echo "<div><h1> Friend Requests Sent</h1>
+            echo "<div>
                   <table class='table table-hover'>
                     <thead class='thead-dark'>
                       <tr>
@@ -311,8 +312,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["sender_uid"])) {
             //output first note
             $row = $result->fetch_assoc();
 
+
+            //<h1> Friend Requests Recieved</h1>
             //start table
-            echo "<div><h1> Friend Requests Recieved</h1>
+            echo "<div>
                   <table class='table table-hover'>
                     <thead class='thead-dark'>
                       <tr>
@@ -358,11 +361,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["sender_uid"])) {
           } else {
               echo "You have no friend requests lol";
           }
-
-
-          //echo "</br></br><a href='new_friend.php' class='btn btn-primary'>Add New Friend</a>";
-
-
 
         } else{
             echo "Error: Statement did not execute".mysqli_error($conn);
@@ -424,7 +422,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST["sender_uid"])) {
                     echo "Error: Statement could not be prepared".mysqli_error($conn);
                 }
 
-                // $conn->close();
                ?>
             </select>
             <span class="help-block"><?php echo $reciever_uid_err; ?></span>

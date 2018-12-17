@@ -46,9 +46,6 @@ require_once "config.php";
 
     //fetch notes written by user
 
-    //array to store notes
-    // $notes = array();
-
     // Prepare a select statement
     $sql = "SELECT * FROM note NATURAL LEFT OUTER JOIN schedules WHERE uid = ? ORDER BY ntimestamp";
 

@@ -8,19 +8,11 @@ require_once "config.php";
 //Inlude fetch user data
 require_once "fetch_user_data.php";
 
-  // echo $userlat;
-  // echo $userlng;
-
-
 //Set to eastern time zone
 date_default_timezone_set("America/New_York");
 
 //get current time
 $currTime = date("Y-m-d G:i:s", time());
-//echo $currTime;
-
-
-
 
 // Define variables and initialize with empty values
 $fname = $sid = $filter_privacy = $activeDays =  $startDate = $endDate = $startTime = $endTime = $radius = $sched_id = $tid = "";
@@ -28,9 +20,6 @@ $fname_err = $sid_err = $filter_privacy_err = $activeDays_err =  $startDate_err 
 
 // Processing form data when form is submitted
 if($_SERVER["REQUEST_METHOD"] == "POST"){
-
-  // echo $_POST["startTime"];
-  // echo $_POST["endTime"];
 
     // Validate fname
     if(empty(trim($_POST["fname"]))){
@@ -67,12 +56,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate filter_privacy
     if(empty(trim($filter_privacy))){
-        //$filter_privacy_err = "Please pick a privacy setting for your filter.";
         $filter_privacy = "self, friends, public";
     }
-    //else{
-    //     $filter_privacy = trim($_POST["filter_privacy"]);
-    // }
 
     //concatenate active days
     if(isset($_POST["Mon"])) {
@@ -103,27 +88,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate activeDays
     if(empty(trim($activeDays))){
-        //$activeDays_err = "Please select day(s) you want this note to be active.";
         $activeDays = "Mon, Tue, Wed, Thu, Fri, Sat, Sun";
     }
 
-    // // Validate startDate
-    // if(empty(trim($_POST["startDate"]))){
-    //     $startDate_err = "Please enter a start date.";
-    // } else{
-    //     $startDate = trim($_POST["startDate"]);
-    // }
-    //
-    // // Validate endDate
-    // if(empty(trim($_POST["endDate"]))){
-    //     $endDate_err = "Please enter a end date.";
-    // } else{
-    //     $endDate = trim($_POST["endDate"]);
-    // }
-
     // Validate startDate
     if(empty(trim($_POST["startDate"]))){
-        //$startDate_err = "Please enter a start date.";
         $startDate = date("Y-m-d", time());
     } else{
         $startDate = trim($_POST["startDate"]);
@@ -131,7 +100,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate endDate
     if(empty(trim($_POST["endDate"]))){
-        //$endDate_err = "Please enter a end date.";
         $endDate = date("Y-m-d", mktime(0,0,0,1,1,2999));
     } else{
         $endDate = trim($_POST["endDate"]);
@@ -144,7 +112,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate startTime
     if(empty(trim($_POST["startTime"]))){
-        //$startTime_err = "Please enter a time of day to start showing the note.";
         $startTime = "00:00";
     } else{
         $startTime = trim($_POST["startTime"]);
@@ -152,7 +119,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate endTime
     if(empty(trim($_POST["endTime"]))){
-        //$endTime_err = "Please enter a time of day to stop showing the note.";
         $endTime = "24:00";
     } else{
         $endTime = trim($_POST["endTime"]);
@@ -165,7 +131,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
     // Validate radius
     if(empty(trim($_POST["radius"]))){
-        //$radius_err = "Please enter a radius of how far from the notes location you want it to be displayed.";
         $radius = PHP_FLOAT_MAX;
     } else{
         $radius = trim($_POST["radius"]);
@@ -183,10 +148,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
         // Prepare an schedule insert statement
         $sql_sched = "INSERT INTO schedules (activeDays, startDate, endDate, startTime, endTime) VALUES (?, ?, ?, ?, ?)";
-
-        //statement to get last inserted sched_id
-        $sql_get_sched = "SELECT sched_id FROM schedules ORDER BY sched_id DESC LIMIT 1";
-
+        
         // Prepare an note insert statement
         $sql_filter = "INSERT INTO filters (uid, tid, sid, sched_id, fname, filter_privacy, radius, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -233,8 +195,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                   echo "Error: Statement not prepared: ".mysqli_error($conn);
               }
 
-        // // Close statement
-        // $stmt->close();
             } else {
                 echo "Error: Statement not executed: ".mysqli_error($conn);
             }
@@ -243,8 +203,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
               echo "Error: Statement not executed: ".mysqli_error($conn);
           }
 
-    // Close connection
-    // $conn->close();
     }
 }
 ?>

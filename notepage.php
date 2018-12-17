@@ -21,11 +21,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
   }
 
   if(empty($ctext_err)) {
-    // //Set to eastern time zone
-    // date_default_timezone_set("America/New_York");
-    //
-    // //get current time
-    // $currTime = date("Y-m-d G:i:s", time());
 
     $sql = "INSERT INTO comments (nid, uid, ctext) VALUES (?, ?, ?)";
 
@@ -89,7 +84,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
       if(isset($_GET["nid"])) {
         $nid = $_GET["nid"];
-        // echo $nid;
       }
 
       $sql = "SELECT * FROM note JOIN users ON note.uid  = users.uid WHERE nid = ?";
@@ -110,10 +104,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
           if($result->num_rows > 0) {
 
             $note = $result->fetch_assoc();
-
-            // foreach($note as $field) {
-            //   echo "(".htmlspecialchars($field).")";
-            // }
 
             echo "<div>
                   <h2> ".$note["ntext"]."</h2>

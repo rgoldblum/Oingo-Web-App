@@ -2,12 +2,8 @@
 //check if user is logged in
 require_once "check_login.php";
 
-
 // Include config file
 require_once "config.php";
-
-//array to store notes
-//$notes = array();
 
 $userlat;
 $userlng;
@@ -31,25 +27,15 @@ if($stmt = $conn->prepare($sql)){
 
     //iterate through rows
     while ($row = $result->fetch_assoc()) {
-      // echo '<p>Row:'.$row.'</p>';
       //store row in notes array
       $userlat = $row['latitude'];
       $userlng = $row['longitude'];
       $username = $row['username'];
     }
-    // echo $userlat;
-    // echo $userlng;
-
-    // $notes = json_encode($notes);
-    //
-    // echo $notes;
 
   } else{
       echo "Oops! Something went wrong. Please try again later.";
   }
 }
-
-
-
 
 ?>
